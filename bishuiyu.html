@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>壁水貐</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            width: 100vw;
+            height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            padding: 6px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        /* 6个虚线卡牌格子 - 中间上方 3+3 布局 */
+        .card-grid {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 18px;
+            width: 400px;
+        }
+
+        .card-slot {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            border: 1.5px dashed rgba(255,255,255,0.25);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card-slot:hover {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* 右侧图片 */
+        .content {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            padding-right: 120px;
+            z-index: 3;
+            gap: 16px;
+        }
+
+        .star-image {
+            max-width: 50vh;
+            max-height: 60vh;
+            object-fit: contain;
+            opacity: 0;
+            transform: translateX(40px);
+            animation: slideIn 0.8s ease forwards;
+        }
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .star-name {
+            color: rgba(255,255,255,0.8);
+            font-size: 18px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        /* 下方手牌区 */
+        .hand-area {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .hand-title {
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            letter-spacing: 3px;
+        }
+        .hand-cards {
+            display: flex;
+            gap: 16px;
+        }
+        .hand-card {
+            width: 110px;
+            height: 165px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: dealIn 0.5s ease backwards;
+        }
+        .hand-card:nth-child(1) { animation-delay: 0.1s; }
+        .hand-card:nth-child(2) { animation-delay: 0.2s; }
+        .hand-card:nth-child(3) { animation-delay: 0.3s; }
+        .hand-card:nth-child(4) { animation-delay: 0.4s; }
+        .hand-card:nth-child(5) { animation-delay: 0.5s; }
+        @keyframes dealIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hand-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+        .hand-card:hover {
+            transform: translateY(-6px);
+        }
+        /* 音量控制按钮 */
+        .volume-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .volume-slider-wrap {
+            position: fixed;
+            top: 20px;
+            right: 72px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .volume-slider-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200, 180, 240, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(220, 200, 255, 1);
+            box-shadow: 0 0 12px rgba(180, 150, 220, 0.5);
+        }
+        .volume-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            min-width: 28px;
+            text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
+    <button class="back-btn" onclick="history.back()">← 返回</button>
+    <!-- 音量控制 -->
+    <button class="volume-btn" id="volumeBtn" onclick="toggleVolume()" title="音量">🔊</button>
+    <div class="volume-slider-wrap" id="volumeSliderWrap">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
+        <span class="volume-label" id="volumeLabel">50%</span>
+    </div>
+
+    <div class="card-grid">
+        <div class="card-slot"></div>
+        <div class="card-slot"></div>
+        <div class="card-slot"></div>
+        <div class="card-slot"></div>
+        <div class="card-slot"></div>
+        <div class="card-slot"></div>
+    </div>
+
+    <div class="hand-area">
+        <div class="hand-title">本回合手牌</div>
+        <div class="hand-cards" id="handCards"></div>
+    </div>
+
+    <div class="content">
+        <img class="star-image" src="bishuiyu/壁水貐 (2).png" alt="壁水貐" onerror="this.style.display='none'">
+        <div class="star-name">壁水貐</div>
+    </div>
+
+    <script>
+        // 15张卡牌池
+        const allCards = [
+            '冰水.png', '虎爪金.png', '琥珀土.png', '火.png', '金.png',
+            '莲花木.png', '鹿木.png', '玫瑰火.png', '木.png', '山土.png',
+            '水.png', '土.png', '星星金.png', '羽毛火.png', '月亮水.png'
+        ];
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function drawHand() {
+            const shuffled = shuffle(allCards);
+            const cards = shuffled.slice(0, 5);
+            const handCardsEl = document.getElementById('handCards');
+            handCardsEl.innerHTML = '';
+            cards.forEach(name => {
+                const el = document.createElement('div');
+                el.className = 'hand-card';
+                el.innerHTML = `<img src="卡牌/${name}" alt="${name}">`;
+                handCardsEl.appendChild(el);
+            });
+        }
+
+        drawHand();
+        // 背景音乐与音量控制
+        const bgMusic = document.getElementById('bgMusic');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLabel = document.getElementById('volumeLabel');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        let volumeVisible = false;
+        const savedVol = sessionStorage.getItem('bgMusicVolume');
+        if (savedVol !== null) {
+            volumeSlider.value = savedVol;
+            volumeLabel.textContent = savedVol + '%';
+        }
+        bgMusic.volume = volumeSlider.value / 100;
+        updateVolumeIcon();
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => { updateVolumeIcon(); }).catch(() => {});
+            }
+        }
+        document.addEventListener('click', tryPlayMusic, { once: false });
+        function toggleVolume() {
+            volumeVisible = !volumeVisible;
+            if (volumeVisible) { volumeSliderWrap.classList.add('show'); }
+            else { volumeSliderWrap.classList.remove('show'); }
+        }
+        function onVolumeChange(val) {
+            bgMusic.volume = val / 100;
+            volumeLabel.textContent = val + '%';
+            sessionStorage.setItem('bgMusicVolume', val);
+            updateVolumeIcon();
+        }
+        function updateVolumeIcon() {
+            const vol = volumeSlider.value / 100;
+            if (vol <= 0 || bgMusic.muted) { volumeBtn.textContent = '🔇'; }
+            else if (vol < 0.33) { volumeBtn.textContent = '🔈'; }
+            else if (vol < 0.66) { volumeBtn.textContent = '🔉'; }
+            else { volumeBtn.textContent = '🔊'; }
+        }
+        document.addEventListener('click', function(e) {
+            if (volumeVisible && !e.target.closest('#volumeBtn') && !e.target.closest('#volumeSliderWrap')) {
+                volumeVisible = false;
+                volumeSliderWrap.classList.remove('show');
+            }
+        });    </script>
+</body>
+</html>

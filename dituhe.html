@@ -1,0 +1,488 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氐宿地脉</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            min-height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            padding: 6px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .event-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .earth-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(212,163,115,0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .event-container {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            width: 100%;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .character-area {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .character-img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            opacity: 0.9;
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(212,163,115,0.15);
+        }
+
+        .event-content {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(212,163,115,0.15);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-title {
+            font-size: 28px;
+            color: #d4a373;
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+        .event-subtitle {
+            font-size: 13px;
+            color: rgba(212,163,115,0.5);
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+
+        .event-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            line-height: 2;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .choice-btn {
+            background: rgba(212,163,115,0.08);
+            border: 1px solid rgba(212,163,115,0.2);
+            color: rgba(255,255,255,0.85);
+            font-size: 15px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .choice-btn:hover {
+            background: rgba(212,163,115,0.16);
+            border-color: rgba(212,163,115,0.4);
+            transform: translateX(4px);
+            box-shadow: 0 0 20px rgba(212,163,115,0.1);
+        }
+        .choice-btn.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .choice-btn .choice-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .choice-btn .choice-left {
+            display: flex;
+            align-items: center;
+        }
+        .choice-btn .choice-desc {
+            font-size: 11px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .result-area {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(212,163,115,0.08);
+            border: 1px solid rgba(212,163,115,0.2);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #d4a373;
+            letter-spacing: 1px;
+            display: none;
+        }
+        .result-area.show { display: block; }
+
+        .continue-btn {
+            margin-top: 20px;
+            background: rgba(212,163,115,0.15);
+            border: 1px solid rgba(212,163,115,0.3);
+            color: #d4a373;
+            font-size: 15px;
+            padding: 12px 36px;
+            border-radius: 24px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            display: none;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .continue-btn.show { display: block; }
+        .continue-btn:hover {
+            background: rgba(212,163,115,0.25);
+            border-color: rgba(212,163,115,0.5);
+            box-shadow: 0 0 25px rgba(212,163,115,0.2);
+        }
+
+        /* 卡牌悬浮提示 */
+        .card-tooltip {
+            position: fixed;
+            z-index: 999;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11px;
+            line-height: 1.5;
+            pointer-events: none;
+            display: none;
+            max-width: 180px;
+            white-space: nowrap;
+        }
+        .card-tooltip.show { display: block; }
+        .card-tooltip .tt-name { font-size: 12px; color: #fff; margin-bottom: 2px; display: flex; gap: 6px; align-items: center; }
+        .card-tooltip .tt-element { font-size: 10px; opacity: 0.8; }
+        .card-tooltip .tt-base { color: rgba(255,255,255,0.6); }
+        .card-tooltip .tt-special { color: rgba(255,255,255,0.5); }
+        .card-tooltip .tt-role { color: rgba(255,255,255,0.35); font-size: 9px; }
+
+        .event-footer {
+            text-align: center;
+            color: rgba(255,255,255,0.15);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 30px;
+        }
+        /* 音量控制按钮 */
+        .volume-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .volume-slider-wrap {
+            position: fixed;
+            top: 20px;
+            right: 72px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .volume-slider-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200, 180, 240, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(220, 200, 255, 1);
+            box-shadow: 0 0 12px rgba(180, 150, 220, 0.5);
+        }
+        .volume-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            min-width: 28px;
+            text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
+    <button class="back-btn" onclick="location.href='beast.html'">← 返回</button>
+    <!-- 音量控制 -->
+    <button class="volume-btn" id="volumeBtn" onclick="toggleVolume()" title="音量">🔊</button>
+    <div class="volume-slider-wrap" id="volumeSliderWrap">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
+        <span class="volume-label" id="volumeLabel">50%</span>
+    </div>
+
+    <img class="event-bg" src="氐土貉.png" alt="" onerror="this.style.display='none'">
+    <div class="earth-overlay"></div>
+
+    <div class="event-container">
+        <div class="event-content">
+            <div class="event-title">✦ 氐宿地脉 ✦</div>
+            <div class="event-subtitle">氐土貉 · 青龙第三宿</div>
+
+            <div class="character-area">
+                <img class="character-img" src="氐土貉.png" alt="氐土貉" onerror="this.style.display='none'">
+            </div>
+
+            <div class="event-text">
+                地脉微微震动，氐土貉从裂开的星壤中探出头来。<br>
+                它没有攻击你，只把几枚沉重的土符推到你面前。<br>
+                "青龙星阵越往深处，越需要稳固阵基。"
+            </div>
+
+            <div class="choices" id="choices">
+                <button class="choice-btn" onclick="choose('shield')">
+                    <span class="choice-left"><span class="choice-icon">🛡️</span> 厚土护身</span>
+                    <span class="choice-desc">下局开局+10护盾</span>
+                </button>
+                <button class="choice-btn" onclick="choose('mountain')" onmouseenter="showTooltip('山土',this)" onmouseleave="hideTooltip()">
+                    <span class="choice-left"><span class="choice-icon">⛰️</span> 山岳符</span>
+                    <span class="choice-desc">获得【山土】</span>
+                </button>
+                <button class="choice-btn" onclick="choose('amber')" onmouseenter="showTooltip('琥珀土',this)" onmouseleave="hideTooltip()">
+                    <span class="choice-left"><span class="choice-icon">💎</span> 琥珀灵光</span>
+                    <span class="choice-desc">获得【琥珀土】</span>
+                </button>
+            </div>
+
+    <div class="card-tooltip" id="cardTooltip"></div>
+
+    <div class="result-area" id="resultArea"></div>
+    <button class="continue-btn" id="continueBtn" onclick="continueToNext()">继续前进 →</button>
+        </div>
+
+        <div class="event-footer">— 氐土貉的馈赠 —</div>
+    </div>
+
+    <script>
+        let chosen = false;
+
+        // 卡牌数据
+        const CARD_DATA = {
+            '山土':   { element: '土', base: '获得12点护盾', special: '如果本回合触发大结算，额外获得5点护盾', role: '高额防御' },
+            '琥珀土': { element: '土', base: '获得8点护盾', special: '同时回复2点生命', role: '防御+回复' },
+        };
+
+        function showTooltip(cardName, btn) {
+            const data = CARD_DATA[cardName];
+            if (!data) return;
+            const tip = document.getElementById('cardTooltip');
+            const colors = { '土': '#d4a373' };
+            const elColor = colors[data.element] || '#fff';
+            tip.innerHTML = `
+                <div class="tt-name">
+                    <span>${cardName}</span>
+                    <span class="tt-element" style="color:${elColor}">${data.element}</span>
+                </div>
+                <div class="tt-base">基础：${data.base}</div>
+                <div class="tt-special">特殊：${data.special}</div>
+                <div class="tt-role">定位：${data.role}</div>
+            `;
+            tip.style.display = 'block';
+            const rect = btn.getBoundingClientRect();
+            const tipW = tip.offsetWidth || 180;
+            let left = rect.left - tipW - 10;
+            if (left < 10) left = rect.right + 10;
+            tip.style.left = left + 'px';
+            tip.style.top = rect.top + 'px';
+            tip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            const tip = document.getElementById('cardTooltip');
+            tip.classList.remove('show');
+            tip.style.display = 'none';
+        }
+
+        function getDeck() {
+            try {
+                const stored = sessionStorage.getItem('playerDeck');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                }
+            } catch (e) {}
+            return [];
+        }
+
+        function choose(type) {
+            if (chosen) return;
+            chosen = true;
+
+            // 禁用所有按钮
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.add('disabled'));
+
+            const resultEl = document.getElementById('resultArea');
+            const deck = getDeck();
+
+            if (type === 'shield') {
+                sessionStorage.setItem('nextBattleStartShield', '10');
+                resultEl.textContent = '你获得了【厚土护身】。下一场战斗开始时获得10点护盾。';
+            } else if (type === 'mountain') {
+                deck.push({ name: '山土', element: '土', id: '山土-' + Date.now() });
+                sessionStorage.setItem('playerDeck', JSON.stringify(deck));
+                resultEl.textContent = '你获得了【山土】。';
+            } else if (type === 'amber') {
+                deck.push({ name: '琥珀土', element: '土', id: '琥珀土-' + Date.now() });
+                sessionStorage.setItem('playerDeck', JSON.stringify(deck));
+                resultEl.textContent = '你获得了【琥珀土】。';
+            }
+
+            resultEl.classList.add('show');
+            document.getElementById('continueBtn').classList.add('show');
+        }
+
+        function continueToNext() {
+            markCleared('氐土貉');
+            window.location.href = 'fangritu.html';
+        }
+        function markCleared(name) {
+            const cleared = JSON.parse(sessionStorage.getItem('clearedBeasts') || '[]');
+            if (!cleared.includes(name)) {
+                cleared.push(name);
+                sessionStorage.setItem('clearedBeasts', JSON.stringify(cleared));
+            }
+        }
+        // 背景音乐与音量控制
+        const bgMusic = document.getElementById('bgMusic');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLabel = document.getElementById('volumeLabel');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        let volumeVisible = false;
+        const savedVol = sessionStorage.getItem('bgMusicVolume');
+        if (savedVol !== null) {
+            volumeSlider.value = savedVol;
+            volumeLabel.textContent = savedVol + '%';
+        }
+        bgMusic.volume = volumeSlider.value / 100;
+        updateVolumeIcon();
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => { updateVolumeIcon(); }).catch(() => {});
+            }
+        }
+        document.addEventListener('click', tryPlayMusic, { once: false });
+        function toggleVolume() {
+            volumeVisible = !volumeVisible;
+            if (volumeVisible) { volumeSliderWrap.classList.add('show'); }
+            else { volumeSliderWrap.classList.remove('show'); }
+        }
+        function onVolumeChange(val) {
+            bgMusic.volume = val / 100;
+            volumeLabel.textContent = val + '%';
+            sessionStorage.setItem('bgMusicVolume', val);
+            updateVolumeIcon();
+        }
+        function updateVolumeIcon() {
+            const vol = volumeSlider.value / 100;
+            if (vol <= 0 || bgMusic.muted) { volumeBtn.textContent = '🔇'; }
+            else if (vol < 0.33) { volumeBtn.textContent = '🔈'; }
+            else if (vol < 0.66) { volumeBtn.textContent = '🔉'; }
+            else { volumeBtn.textContent = '🔊'; }
+        }
+        document.addEventListener('click', function(e) {
+            if (volumeVisible && !e.target.closest('#volumeBtn') && !e.target.closest('#volumeSliderWrap')) {
+                volumeVisible = false;
+                volumeSliderWrap.classList.remove('show');
+            }
+        });    </script>
+</body>
+</html>

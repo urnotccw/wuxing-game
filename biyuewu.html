@@ -1,0 +1,414 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月乌窥影</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            min-height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            padding: 6px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .event-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .moon-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(130,170,220,0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .event-container {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            width: 100%;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .character-area {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .character-img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            opacity: 0.9;
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(130,170,220,0.15);
+        }
+
+        .event-content {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(130,170,220,0.15);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-title {
+            font-size: 28px;
+            color: #82aadc;
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+        .event-subtitle {
+            font-size: 13px;
+            color: rgba(130,170,220,0.5);
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+
+        .event-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            line-height: 2;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .choice-btn {
+            background: rgba(130,170,220,0.08);
+            border: 1px solid rgba(130,170,220,0.2);
+            color: rgba(255,255,255,0.85);
+            font-size: 15px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .choice-btn:hover {
+            background: rgba(130,170,220,0.16);
+            border-color: rgba(130,170,220,0.4);
+            transform: translateX(4px);
+            box-shadow: 0 0 20px rgba(130,170,220,0.1);
+        }
+        .choice-btn.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .choice-btn .choice-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .choice-btn .choice-left {
+            display: flex;
+            align-items: center;
+        }
+        .choice-btn .choice-desc {
+            font-size: 11px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .result-area {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(130,170,220,0.08);
+            border: 1px solid rgba(130,170,220,0.2);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #82aadc;
+            letter-spacing: 1px;
+            display: none;
+        }
+        .result-area.show { display: block; }
+
+        .continue-btn {
+            margin-top: 20px;
+            background: rgba(130,170,220,0.15);
+            border: 1px solid rgba(130,170,220,0.3);
+            color: #82aadc;
+            font-size: 15px;
+            padding: 12px 36px;
+            border-radius: 24px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            display: none;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .continue-btn.show { display: block; }
+        .continue-btn:hover {
+            background: rgba(130,170,220,0.25);
+            border-color: rgba(130,170,220,0.5);
+            box-shadow: 0 0 25px rgba(130,170,220,0.2);
+        }
+
+        .event-footer {
+            text-align: center;
+            color: rgba(255,255,255,0.15);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 30px;
+        }
+        /* 音量控制按钮 */
+        .volume-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .volume-slider-wrap {
+            position: fixed;
+            top: 20px;
+            right: 72px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .volume-slider-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200, 180, 240, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(220, 200, 255, 1);
+            box-shadow: 0 0 12px rgba(180, 150, 220, 0.5);
+        }
+        .volume-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            min-width: 28px;
+            text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
+    <button class="back-btn" onclick="location.href='beast.html'">← 返回</button>
+    <!-- 音量控制 -->
+    <button class="volume-btn" id="volumeBtn" onclick="toggleVolume()" title="音量">🔊</button>
+    <div class="volume-slider-wrap" id="volumeSliderWrap">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
+        <span class="volume-label" id="volumeLabel">50%</span>
+    </div>
+
+    <img class="event-bg" src="毕月乌.png" alt="" onerror="this.style.display='none'">
+    <div class="moon-overlay"></div>
+
+    <div class="event-container">
+        <div class="event-content">
+            <div class="event-title">✦ 月乌窥影 ✦</div>
+            <div class="event-subtitle">毕月乌 · 白虎第五宿</div>
+
+            <div class="character-area">
+                <img class="character-img" src="毕月乌.png" alt="毕月乌" onerror="this.style.display='none'">
+            </div>
+
+            <div class="event-text">
+                白虎星道渐暗，一轮冷月悬在高处。<br>
+                毕月乌停在残破的石碑上，黑羽间流动着淡蓝月光。<br>
+                它没有给予你武器，只用乌瞳映出前方敌人的影子。<br>
+                "看见破绽的人，才配落下最后一击。"
+            </div>
+
+            <div class="choices" id="choices">
+                <button class="choice-btn" onclick="choose('flaw')">
+                    <span class="choice-left"><span class="choice-icon">👁️</span> 窥破弱点</span>
+                    <span class="choice-desc">敌人获得2层预知破绽</span>
+                </button>
+                <button class="choice-btn" onclick="choose('feather')">
+                    <span class="choice-left"><span class="choice-icon">🪶</span> 黑羽避凶</span>
+                    <span class="choice-desc">首次特殊伤害-8+清负面</span>
+                </button>
+                <button class="choice-btn" onclick="choose('crow')">
+                    <span class="choice-left"><span class="choice-icon">🌙</span> 乌啼克兆</span>
+                    <span class="choice-desc">首次相克+8+减攻2</span>
+                </button>
+            </div>
+
+    <div class="result-area" id="resultArea"></div>
+    <button class="continue-btn" id="continueBtn" onclick="continueToNext()">继续前进 →</button>
+        </div>
+
+        <div class="event-footer">— 毕月乌的窥视 —</div>
+    </div>
+
+    <script>
+        let chosen = false;
+
+        function choose(type) {
+            if (chosen) return;
+            chosen = true;
+
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.add('disabled'));
+
+            const resultEl = document.getElementById('resultArea');
+
+            if (type === 'flaw') {
+                sessionStorage.setItem('nextBattleForeseenFlaw', '2');
+                resultEl.textContent = '你获得了【窥破弱点】。下一场战斗敌人开局获得2层预知破绽，每层使你的首次伤害+5。';
+            } else if (type === 'feather') {
+                sessionStorage.setItem('nextBattleBlackFeather', 'true');
+                resultEl.textContent = '你获得了【黑羽避凶】。下一场战斗中，首次受到特殊机制伤害时减免8点，并清除1层负面状态。';
+            } else if (type === 'crow') {
+                sessionStorage.setItem('nextBattleCrowKe', 'true');
+                resultEl.textContent = '你获得了【乌啼克兆】。下一场战斗中，首次触发相克小结算时额外造成8点伤害，敌人下次攻击-2。';
+            }
+
+            resultEl.classList.add('show');
+            document.getElementById('continueBtn').classList.add('show');
+        }
+
+        function continueToNext() {
+            markCleared('毕月乌');
+            sessionStorage.setItem('battleLevel', '5');
+            window.location.href = 'battle.html';
+        }
+        function markCleared(name) {
+            const cleared = JSON.parse(sessionStorage.getItem('clearedBeasts') || '[]');
+            if (!cleared.includes(name)) {
+                cleared.push(name);
+                sessionStorage.setItem('clearedBeasts', JSON.stringify(cleared));
+            }
+        }
+        // 背景音乐与音量控制
+        const bgMusic = document.getElementById('bgMusic');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLabel = document.getElementById('volumeLabel');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        let volumeVisible = false;
+        const savedVol = sessionStorage.getItem('bgMusicVolume');
+        if (savedVol !== null) {
+            volumeSlider.value = savedVol;
+            volumeLabel.textContent = savedVol + '%';
+        }
+        bgMusic.volume = volumeSlider.value / 100;
+        updateVolumeIcon();
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => { updateVolumeIcon(); }).catch(() => {});
+            }
+        }
+        document.addEventListener('click', tryPlayMusic, { once: false });
+        function toggleVolume() {
+            volumeVisible = !volumeVisible;
+            if (volumeVisible) { volumeSliderWrap.classList.add('show'); }
+            else { volumeSliderWrap.classList.remove('show'); }
+        }
+        function onVolumeChange(val) {
+            bgMusic.volume = val / 100;
+            volumeLabel.textContent = val + '%';
+            sessionStorage.setItem('bgMusicVolume', val);
+            updateVolumeIcon();
+        }
+        function updateVolumeIcon() {
+            const vol = volumeSlider.value / 100;
+            if (vol <= 0 || bgMusic.muted) { volumeBtn.textContent = '🔇'; }
+            else if (vol < 0.33) { volumeBtn.textContent = '🔈'; }
+            else if (vol < 0.66) { volumeBtn.textContent = '🔉'; }
+            else { volumeBtn.textContent = '🔊'; }
+        }
+        document.addEventListener('click', function(e) {
+            if (volumeVisible && !e.target.closest('#volumeBtn') && !e.target.closest('#volumeSliderWrap')) {
+                volumeVisible = false;
+                volumeSliderWrap.classList.remove('show');
+            }
+        });    </script>
+</body>
+</html>

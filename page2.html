@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五行星轨 - 四象</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas { display: block; position: fixed; top: 0; left: 0; z-index: 3; pointer-events: none; }
+        .beast {
+            position: fixed;
+            z-index: 2;
+            width: 286px;
+            height: 286px;
+            border-radius: 50%;
+            object-fit: contain;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+        .beast.show {
+            opacity: 0.85;
+            transform: scale(1);
+        }
+        .beast:hover {
+            transform: scale(1.2) !important;
+            z-index: 10;
+        }
+        /* 默认灰色：未通关时显示灰色 */
+        .beast {
+            filter: grayscale(1) brightness(0.45);
+            transition: filter 1.2s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .beast:hover {
+            filter: grayscale(0.5) brightness(0.7);
+        }
+        /* 已通关：点亮，移除灰色 */
+        .beast.unlocked {
+            filter: grayscale(0) brightness(1);
+        }
+        .beast.unlocked:hover {
+            filter: grayscale(0) brightness(1.1) drop-shadow(0 0 20px rgba(255,255,255,0.3));
+        }
+        .beast-top {
+            top: 2%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+        }
+        .beast-top.show {
+            transform: translateX(-50%) scale(1);
+        }
+        .beast-top:hover {
+            transform: translateX(-50%) scale(1.2) !important;
+        }
+        .beast-bottom {
+            bottom: 2%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+        }
+        .beast-bottom.show {
+            transform: translateX(-50%) scale(1);
+        }
+        .beast-bottom:hover {
+            transform: translateX(-50%) scale(1.2) !important;
+        }
+        .beast-left {
+            left: 22%;
+            top: 50%;
+            transform: translateY(-50%) scale(0.5);
+        }
+        .beast-left.show {
+            transform: translateY(-50%) scale(1);
+        }
+        .beast-left:hover {
+            transform: translateY(-50%) scale(1.2) !important;
+        }
+        .beast-right {
+            right: 22%;
+            top: 50%;
+            transform: translateY(-50%) scale(0.5);
+        }
+        .beast-right.show {
+            transform: translateY(-50%) scale(1);
+        }
+        .beast-right:hover {
+            transform: translateY(-50%) scale(1.2) !important;
+        }
+        .nav-buttons {
+            position: fixed;
+            bottom: 50px;
+            left: 40px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-wrap {
+            margin-bottom: 10px;
+        }
+        .logo-img {
+            width: 280px;
+            height: auto;
+            object-fit: contain;
+            opacity: 0.85;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: -10px;
+        }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 15px;
+            padding: 10px 28px;
+            border-radius: 24px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(180, 160, 220, 0.2);
+            transform: translateX(4px);
+        }
+        .hint-bar {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.55);
+            padding: 12px 36px;
+            border-radius: 8px;
+        }
+        .hint-text {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 18px;
+            letter-spacing: 3px;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            animation: breathe 2.5s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        @keyframes breathe {
+            0%, 100% { opacity: 0.35; }
+            50% { opacity: 0.85; }
+        }
+
+        /* 玩法介绍弹窗 */
+        .guide-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .guide-overlay.show {
+            display: flex;
+        }
+        .guide-modal {
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(180, 160, 220, 0.25);
+            border-radius: 16px;
+            width: 620px;
+            max-width: 92vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(140, 120, 200, 0.15);
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .guide-header {
+            padding: 22px 28px 14px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .guide-title {
+            color: rgba(220, 210, 255, 0.9);
+            font-size: 22px;
+            letter-spacing: 4px;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .guide-body {
+            padding: 18px 28px;
+            overflow-y: auto;
+            flex: 1;
+            line-height: 1.85;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 14px;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .guide-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .guide-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .guide-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+        }
+        .guide-body h3 {
+            color: rgba(200, 180, 240, 0.9);
+            font-size: 16px;
+            margin: 18px 0 8px;
+            letter-spacing: 2px;
+            border-left: 3px solid rgba(180, 140, 220, 0.5);
+            padding-left: 10px;
+        }
+        .guide-body h3:first-child {
+            margin-top: 0;
+        }
+        .guide-body p {
+            margin: 6px 0;
+        }
+        .guide-body .rel-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+        .guide-body .rel-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.65);
+            white-space: nowrap;
+        }
+        .guide-body .example {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid rgba(180, 160, 220, 0.3);
+            padding: 10px 14px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .guide-footer {
+            padding: 16px 28px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .guide-close-btn {
+            background: rgba(180, 160, 220, 0.15);
+            border: 1px solid rgba(180, 160, 220, 0.3);
+            color: rgba(220, 210, 255, 0.9);
+            font-size: 15px;
+            padding: 10px 40px;
+            border-radius: 24px;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .guide-close-btn:hover {
+            background: rgba(180, 160, 220, 0.25);
+            border-color: rgba(180, 160, 220, 0.5);
+            box-shadow: 0 0 20px rgba(160, 140, 200, 0.2);
+        }
+
+        /* 星宿图鉴弹窗 */
+        .atlas-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .atlas-overlay.show { display: flex; }
+        .atlas-modal {
+            background: rgba(15, 15, 25, 0.96);
+            border: 1px solid rgba(180, 160, 220, 0.2);
+            border-radius: 16px;
+            width: 780px;
+            max-width: 94vw;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(140, 120, 200, 0.12);
+            animation: modalIn 0.3s ease;
+        }
+        .atlas-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 16px 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+        .atlas-tab {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            padding: 8px 22px;
+            border-radius: 20px 20px 0 0;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            margin-bottom: -1px;
+        }
+        .atlas-tab:hover {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.08);
+        }
+        .atlas-tab.active {
+            background: rgba(15,15,25,0.96);
+            border-color: rgba(180,160,220,0.3);
+            color: rgba(200,180,240,0.9);
+            border-bottom-color: transparent;
+        }
+        .atlas-tab.active[data-chapter="青龙"] { color: #7ecb76; }
+        .atlas-tab.active[data-chapter="朱雀"] { color: #f08080; }
+        .atlas-tab.active[data-chapter="白虎"] { color: #e0e0e0; }
+        .atlas-tab.active[data-chapter="玄武"] { color: #78b8e0; }
+        .atlas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .atlas-grid::-webkit-scrollbar { width: 4px; }
+        .atlas-grid::-webkit-scrollbar-track { background: transparent; }
+        .atlas-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .atlas-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .atlas-card.atlas-card-locked {
+            filter: grayscale(1) brightness(0.35);
+        }
+        .atlas-card.atlas-card-locked .atlas-card-name {
+            color: rgba(255,255,255,0.3);
+        }
+        .atlas-card.atlas-card-locked:hover {
+            filter: grayscale(0.6) brightness(0.5);
+        }
+        .atlas-card:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(180,160,220,0.3);
+            transform: translateY(-2px);
+        }
+        .atlas-card-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 50%;
+            margin-bottom: 6px;
+            opacity: 0.8;
+        }
+        .atlas-card-name {
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 1px;
+        }
+        .atlas-card-elem {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+        .atlas-detail-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 110;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .atlas-detail-overlay.show { display: flex; }
+        .atlas-detail-card {
+            background: rgba(20,20,30,0.96);
+            border: 1px solid rgba(180,160,220,0.2);
+            border-radius: 16px;
+            width: 380px;
+            max-width: 90vw;
+            padding: 28px;
+            text-align: center;
+            animation: modalIn 0.25s ease;
+        }
+        .atlas-detail-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            opacity: 0.85;
+        }
+        .atlas-detail-name {
+            font-size: 22px;
+            color: rgba(255,255,255,0.9);
+            letter-spacing: 3px;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .atlas-detail-info {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin: 6px 0;
+            letter-spacing: 1px;
+        }
+        .atlas-detail-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.65);
+            margin: 12px 0 20px;
+            line-height: 1.7;
+        }
+        .atlas-detail-back {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            padding: 8px 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        .atlas-detail-back:hover {
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+        }
+        .atlas-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 120;
+            transition: color 0.3s;
+        }
+        .atlas-close-btn:hover { color: #fff; }
+
+        /* 音量控制按钮 */
+        .volume-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .volume-slider-wrap {
+            position: fixed;
+            top: 20px;
+            right: 72px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .volume-slider-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200, 180, 240, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(220, 200, 255, 1);
+            box-shadow: 0 0 12px rgba(180, 150, 220, 0.5);
+        }
+        .volume-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            min-width: 28px;
+            text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
+    <canvas id="canvas"></canvas>
+    <div class="hint-bar" id="hintBar">
+        <span class="hint-text">点击任意星球开始游戏<br><span style="font-size:13px;opacity:0.65;">推荐顺时针开始，从上方玄武进入</span></span>
+    </div>
+
+    <!-- 音量控制 -->
+    <button class="volume-btn" id="volumeBtn" onclick="toggleVolume()" title="音量">🔊</button>
+    <div class="volume-slider-wrap" id="volumeSliderWrap">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
+        <span class="volume-label" id="volumeLabel">50%</span>
+    </div>
+    <img class="beast beast-top" src="玄武.png" alt="玄武" onclick="goToBeastPage('玄武')">
+    <img class="beast beast-bottom" src="朱雀.png" alt="朱雀" onclick="goToBeastPage('朱雀')">
+    <img class="beast beast-left" src="白虎.png" alt="白虎" onclick="goToBeastPage('白虎')">
+    <img class="beast beast-right" src="青龙.png" alt="青龙" onclick="goToBeastPage('青龙')">
+
+    <div class="nav-buttons">
+        <div class="logo-wrap">
+            <img class="logo-img" src="logo.png" alt="Logo">
+        </div>
+        <div class="btn-group">
+            <button class="nav-btn" onclick="openGuide()">玩法介绍</button>
+            <button class="nav-btn" onclick="openAtlas()">星宿图鉴</button>
+        </div>
+    </div>
+
+    <!-- 玩法介绍弹窗 -->
+    <div class="guide-overlay" id="guideOverlay" onclick="closeGuide(event)">
+        <div class="guide-modal" onclick="event.stopPropagation()">
+            <div class="guide-header">
+                <div class="guide-title">玩法介绍</div>
+            </div>
+            <div class="guide-body">
+                <h3>一、游戏目标</h3>
+                <p>你将进入四象星阵，挑战青龙、朱雀、白虎、玄武四大篇章。</p>
+                <p>每个篇章由七个星宿节点组成。玩家需要通过五行卡牌布置阵法，击败星宿化身，最终点亮二十八宿。</p>
+
+                <h3>二、基础出牌规则</h3>
+                <p>每回合玩家会抽取手牌，并必须选择2张卡牌放入阵法。</p>
+                <p>阵法共有6个格子，分为上下两排：</p>
+                <p><b>发动区</b>：上方3格<br><b>辅助区</b>：下方3格</p>
+                <p>放在发动区的卡牌会触发自身效果。</p>
+                <p>放在辅助区的卡牌不会单独发动，但可以影响同一列上方的卡牌。</p>
+                <p>如果上下两张牌组成一列，就会触发五行关系结算。</p>
+
+                <h3>三、五行相生</h3>
+                <p>相生关系为：</p>
+                <div class="rel-row">
+                    <span class="rel-item">木生火</span>
+                    <span class="rel-item">火生土</span>
+                    <span class="rel-item">土生金</span>
+                    <span class="rel-item">金生水</span>
+                    <span class="rel-item">水生木</span>
+                </div>
+                <p>当辅助区的牌"生"发动区的牌时，发动区卡牌的主要效果<b>翻倍</b>。</p>
+                <div class="example">例如：辅助区放【木】，发动区放【火】，触发"木生火"，火牌伤害翻倍。</div>
+
+                <h3>四、五行相克</h3>
+                <p>相克关系为：</p>
+                <div class="rel-row">
+                    <span class="rel-item">木克土</span>
+                    <span class="rel-item">土克水</span>
+                    <span class="rel-item">水克火</span>
+                    <span class="rel-item">火克金</span>
+                    <span class="rel-item">金克木</span>
+                </div>
+                <p>当辅助区的牌"克"发动区的牌时，发动区卡牌的主要效果<b>减半</b>。</p>
+                <p>但在部分敌人机制中，相克可以破除敌人的特殊状态，所以相克不一定是负面效果。</p>
+
+                <h3>五、小结算与大结算</h3>
+                <p>每回合放牌后，会先进行小结算。</p>
+                <p>如果某一列形成了上下两张牌，就会根据五行关系触发小结算。</p>
+                <p>已经结算过的列会保留在阵法中，但不会重复结算。</p>
+                <p>当6个格子全部填满时，会触发大结算，并清空阵法。</p>
+                <p>大结算分为四种：</p>
+                <p><b>三生阵</b>：三列全部为相生关系，造成额外伤害。<br>
+                <b>三克阵</b>：三列全部为相克关系，削弱敌人攻击。<br>
+                <b>混元阵</b>：六张牌包含金木水火土五种元素，回复生命并获得护盾。<br>
+                <b>普通满阵</b>：不满足特殊阵法时，造成少量额外伤害。</p>
+
+                <h3>六、战斗提示</h3>
+                <p>不同星宿敌人拥有不同机制。</p>
+                <p>有些敌人适合用相生爆发击破，有些敌人需要用相克破除状态，也有些敌人会考验防御、节奏和大结算时机。</p>
+                <p>不要只依赖一种打法。</p>
+                <p>观察敌人机制，选择合适的五行组合，才能点亮完整星阵。</p>
+
+                <h3>七、通关规则</h3>
+                <p>击败当前星宿后，可以进入下一个节点。</p>
+                <p>部分节点不是战斗，而是事件选择，可以获得回复、护盾、卡牌或下一场战斗的特殊增益。</p>
+                <p>完成四象篇章后，二十八宿将全部归位。</p>
+            </div>
+            <div class="guide-footer">
+                <button class="guide-close-btn" onclick="closeGuide()">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 星宿图鉴弹窗 -->
+    <div class="atlas-overlay" id="atlasOverlay" onclick="closeAtlas(event)">
+        <div class="atlas-modal" onclick="event.stopPropagation()">
+            <div class="atlas-tabs" id="atlasTabs"></div>
+            <div class="atlas-grid" id="atlasGrid"></div>
+        </div>
+    </div>
+
+    <!-- 星宿详情弹窗 -->
+    <div class="atlas-detail-overlay" id="atlasDetailOverlay" onclick="closeAtlasDetail(event)">
+        <div class="atlas-detail-card" onclick="event.stopPropagation()">
+            <img class="atlas-detail-img" id="atlasDetailImg" src="" alt="">
+            <div class="atlas-detail-name" id="atlasDetailName"></div>
+            <div class="atlas-detail-info" id="atlasDetailInfo"></div>
+            <div class="atlas-detail-desc" id="atlasDetailDesc"></div>
+            <button class="atlas-detail-back" onclick="closeAtlasDetail()">返回列表</button>
+        </div>
+    </div>
+
+    <script>
+        // 每个四象对应的7个星宿
+        const BEAST_STARS = {
+            '玄武': ['壁水貐', '室火猪', '危月燕', '虚日鼠', '女土蝠', '牛金牛', '斗木獬'],
+            '青龙': ['角木蛟', '亢金龙', '氐土貉', '房日兔', '心月狐', '尾火虎', '箕水豹'],
+            '朱雀': ['井木犴', '鬼金羊', '柳土獐', '星日马', '张月鹿', '翼火蛇', '轸水蚓'],
+            '白虎': ['奎木狼', '娄金狗', '胃土雉', '昴日鸡', '毕月乌', '觜火猴', '参水猿']
+        };
+
+        const BEAST_SELECTORS = {
+            '玄武': '.beast-top',
+            '朱雀': '.beast-bottom',
+            '白虎': '.beast-left',
+            '青龙': '.beast-right'
+        };
+
+        // 检查并更新四象点亮状态
+        function updateBeastUnlock() {
+            const cleared = JSON.parse(sessionStorage.getItem('clearedBeasts') || '[]');
+            for (const [beastName, stars] of Object.entries(BEAST_STARS)) {
+                const allCleared = stars.every(s => cleared.includes(s));
+                const el = document.querySelector(BEAST_SELECTORS[beastName]);
+                if (el) {
+                    if (allCleared) {
+                        el.classList.add('unlocked');
+                    } else {
+                        el.classList.remove('unlocked');
+                    }
+                }
+            }
+            // 全部四象通关后进入结局
+            const allBeastsCleared = Object.values(BEAST_STARS).every(stars => stars.every(s => cleared.includes(s)));
+            const hintEl = document.getElementById('hintBar');
+            if (hintEl && allBeastsCleared) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 1s ease';
+                setTimeout(() => {
+                    window.location.href = 'ending.html';
+                }, 1000);
+            }
+        }
+
+        // ============================================================
+        // 星宿图鉴
+        // ============================================================
+        const STAR_ATLAS = [
+            { id:'jiaoMuJiao', name:'角木蛟', chapter:'青龙', order:1, element:'木', description:'青龙七宿之首，象征东方木气初生，蛟影盘旋于星河之间。', image:'角木蛟.png' },
+            { id:'kangJinLong', name:'亢金龙', chapter:'青龙', order:2, element:'金', description:'金鳞昂首，龙影凌空，象征锋芒与威严。', image:'亢金龙.png' },
+            { id:'diTuHe', name:'氐土貉', chapter:'青龙', order:3, element:'土', description:'伏于星壤之中，承载地脉之力。', image:'氐土貉.png' },
+            { id:'fangRiTu', name:'房日兔', chapter:'青龙', order:4, element:'日', description:'日光温润，灵兔穿行于星阵之间。', image:'房日兔.png' },
+            { id:'xinYueHu', name:'心月狐', chapter:'青龙', order:5, element:'月', description:'月影迷离，狐影重重，象征幻象与魅惑。', image:'心月狐.png' },
+            { id:'weiHuoHu', name:'尾火虎', chapter:'青龙', order:6, element:'火', description:'赤焰如尾，虎影奔袭，象征烈火与追击。', image:'尾火虎.png' },
+            { id:'jiShuiBao', name:'箕水豹', chapter:'青龙', order:7, element:'水', description:'水势奔涌，豹影潜行，象征流动与破浪。', image:'箕水豹.png' },
+            { id:'jingMuAn', name:'井木犴', chapter:'朱雀', order:1, element:'木', description:'星井涌木，犴影伏守，象征薪火初燃。', image:'井木犴.png' },
+            { id:'guiJinYang', name:'鬼金羊', chapter:'朱雀', order:2, element:'金', description:'金铃幽响，羊影穿雾，带有神秘的招魂气息。', image:'鬼金羊.png' },
+            { id:'liuTuZhang', name:'柳土獐', chapter:'朱雀', order:3, element:'土', description:'灰烬入土，獐影轻跃，象征沉淀与滋养。', image:'柳土獐.png' },
+            { id:'xingRiMa', name:'星日马', chapter:'朱雀', order:4, element:'日', description:'日光疾驰，马踏星火，象征速度与炽烈。', image:'星日马.png' },
+            { id:'zhangYueLu', name:'张月鹿', chapter:'朱雀', order:5, element:'月', description:'月鹿踏辉，清光流转，象征疗愈与宁静。', image:'张月鹿.png' },
+            { id:'yiHuoShe', name:'翼火蛇', chapter:'朱雀', order:6, element:'火', description:'赤翼舒展，火蛇盘旋，象征灼烧与爆发。', image:'翼火蛇.png' },
+            { id:'zhenShuiYin', name:'轸水蚓', chapter:'朱雀', order:7, element:'水', description:'水幕潜行，蚓影隐没，象征潮湿与压制。', image:'轸水蚓.png' },
+            { id:'kuiMuLang', name:'奎木狼', chapter:'白虎', order:1, element:'木', description:'狼影潜行于白虎星雾中，象征猎杀的开端。', image:'奎木狼.png' },
+            { id:'louJinGou', name:'娄金狗', chapter:'白虎', order:2, element:'金', description:'金链护门，犬目如炬，象征守护与警觉。', image:'娄金狗.png' },
+            { id:'weiTuZhi', name:'胃土雉', chapter:'白虎', order:3, element:'土', description:'星砂沉积，土雉藏锋，象征储备与蓄势。', image:'胃土雉.png' },
+            { id:'maoRiJi', name:'昴日鸡', chapter:'白虎', order:4, element:'日', description:'晨光破晓，金鸡啼鸣，象征觉醒与照耀。', image:'昴日鸡.png' },
+            { id:'biYueWu', name:'毕月乌', chapter:'白虎', order:5, element:'月', description:'黑羽映月，乌瞳窥影，象征预知与冷光。', image:'毕月乌.png' },
+            { id:'ziHuoHou', name:'觜火猴', chapter:'白虎', order:6, element:'火', description:'火猴狡黠，赤焰跳跃，象征变化与戏法。', image:'觜火猴.png' },
+            { id:'shenShuiYuan', name:'参水猿', chapter:'白虎', order:7, element:'水', description:'水影重重，猿影潜伏，象征分身与终局试炼。', image:'参水猿.png' },
+            { id:'biShuiYu', name:'壁水貐', chapter:'玄武', order:1, element:'水', description:'水壁环身，貐影静伏，象征防护与初始试炼。', image:'玄武/壁水貐.png' },
+            { id:'shiHuoZhu', name:'室火猪', chapter:'玄武', order:2, element:'火', description:'火室低鸣，猪影沉重，象征蓄火与冲撞。', image:'室火猪.png' },
+            { id:'weiYueYan', name:'危月燕', chapter:'玄武', order:3, element:'月', description:'月燕掠空，星光微颤，象征观星与预兆。', image:'危月燕.png' },
+            { id:'xuRiShu', name:'虚日鼠', chapter:'玄武', order:4, element:'日', description:'鼠影穿梭于虚日之下，象征偷袭与机敏。', image:'虚日鼠.png' },
+            { id:'nvTuFu', name:'女土蝠', chapter:'玄武', order:5, element:'土', description:'土雾倒悬，蝠影低飞，象征蒙尘与压制。', image:'女土蝠.png' },
+            { id:'niuJinNiu', name:'牛金牛', chapter:'玄武', order:6, element:'金', description:'金角沉稳，牛影立于星砂之中，象征铸造与坚固。', image:'牛金牛.png' },
+            { id:'douMuXie', name:'斗木獬', chapter:'玄武', order:7, element:'木', description:'獬角裁决，木气肃正，象征审判与终局守护。', image:'斗木獬.png' }
+        ];
+
+        const ATLAS_CHAPTERS = ['青龙','朱雀','白虎','玄武'];
+        let atlasCurrentChapter = '青龙';
+
+        function openAtlas() {
+            atlasCurrentChapter = '青龙';
+            document.getElementById('atlasOverlay').classList.add('show');
+            renderAtlasTabs();
+            renderAtlasGrid();
+        }
+        function closeAtlas(e) {
+            if (e && e.target !== document.getElementById('atlasOverlay')) return;
+            document.getElementById('atlasOverlay').classList.remove('show');
+        }
+        function renderAtlasTabs() {
+            const tabs = document.getElementById('atlasTabs');
+            tabs.innerHTML = ATLAS_CHAPTERS.map(c => {
+                const active = c === atlasCurrentChapter ? ' active' : '';
+                return `<button class="atlas-tab${active}" data-chapter="${c}" onclick="switchAtlasChapter('${c}')">${c}</button>`;
+            }).join('');
+        }
+        function switchAtlasChapter(chapter) {
+            atlasCurrentChapter = chapter;
+            renderAtlasTabs();
+            renderAtlasGrid();
+        }
+        function renderAtlasGrid() {
+            const grid = document.getElementById('atlasGrid');
+            const stars = STAR_ATLAS.filter(s => s.chapter === atlasCurrentChapter);
+            const cleared = JSON.parse(sessionStorage.getItem('clearedBeasts') || '[]');
+            grid.innerHTML = stars.map(s => {
+                const isCleared = cleared.includes(s.name);
+                const grayClass = isCleared ? '' : ' atlas-card-locked';
+                const elemText = isCleared ? `${s.chapter}·第${s.order}宿 · ${s.element}` : '？';
+                const descText = isCleared ? s.description : '？';
+                return `
+                <div class="atlas-card${grayClass}" onclick="openAtlasDetail('${s.id}')">
+                    <img class="atlas-card-img" src="${s.image}" alt="${s.name}" onerror="this.style.display='none'">
+                    <div class="atlas-card-name">${s.name}</div>
+                    <div class="atlas-card-elem">${elemText}</div>
+                </div>
+            `}).join('');
+        }
+        function openAtlasDetail(id) {
+            const s = STAR_ATLAS.find(x => x.id === id);
+            if (!s) return;
+            const cleared = JSON.parse(sessionStorage.getItem('clearedBeasts') || '[]');
+            const isCleared = cleared.includes(s.name);
+            document.getElementById('atlasDetailImg').src = s.image;
+            document.getElementById('atlasDetailName').textContent = s.name;
+            document.getElementById('atlasDetailInfo').textContent = isCleared ? `${s.chapter} · 第${s.order}宿 · 元素：${s.element}` : '？';
+            document.getElementById('atlasDetailDesc').textContent = isCleared ? s.description : '？';
+            document.getElementById('atlasDetailOverlay').classList.add('show');
+        }
+        function closeAtlasDetail(e) {
+            if (e && e.target !== document.getElementById('atlasDetailOverlay')) return;
+            document.getElementById('atlasDetailOverlay').classList.remove('show');
+        }
+
+        // 玩法介绍弹窗
+        function openGuide() {
+            document.getElementById('guideOverlay').classList.add('show');
+        }
+        function closeGuide(e) {
+            if (e && e.target !== document.getElementById('guideOverlay')) return;
+            document.getElementById('guideOverlay').classList.remove('show');
+        }
+
+        function goToBeastPage(name) {
+            // Store the beast name for the detail page
+            sessionStorage.setItem('beastName', name);
+            // 保存当前音量
+            const vol = document.getElementById('volumeSlider').value;
+            sessionStorage.setItem('bgMusicVolume', vol);
+            window.location.href = 'beast.html';
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let W, H, dpr;
+
+        function resize() {
+            dpr = devicePixelRatio;
+            W = canvas.width = window.innerWidth * dpr;
+            H = canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', () => { resize(); initAll(); });
+        resize();
+
+        const SPHERE_R = 90;
+        const TOTAL_PARTICLES = 15000;
+        const STREAM_COUNT = 12;
+
+        const CX = () => window.innerWidth / 2;
+        const CY = () => window.innerHeight / 2;
+
+        const perm = new Uint8Array(512);
+        (() => {
+            const p = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+            for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+        })();
+
+        function noise3D(x, y, z) {
+            const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+            x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+            const u = x * x * x * (x * (x * 6 - 15) + 10);
+            const v = y * y * y * (y * (y * 6 - 15) + 10);
+            const w = z * z * z * (z * (z * 6 - 15) + 10);
+            const A = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
+            const B = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
+            const grad = (h, x, y, z) => {
+                const hh = h & 15;
+                const uu = hh < 8 ? x : y;
+                const vv = hh < 4 ? y : (hh === 12 || hh === 14 ? x : z);
+                return ((hh & 1) === 0 ? uu : -uu) + ((hh & 2) === 0 ? vv : -vv);
+            };
+            return (grad(perm[AA], x, y, z) * (1 - u) + grad(perm[BA], x - 1, y, z) * u) * (1 - v) +
+                   (grad(perm[AB], x, y - 1, z) * (1 - u) + grad(perm[BB], x - 1, y - 1, z) * u) * v;
+        }
+
+        class StreamCurve {
+            constructor(id) {
+                this.id = id;
+                this.seed = id * 137.5 + 50;
+                this.thickness = 0.6 + Math.random() * 1.4;
+                this.baseHue = [195, 280, 30, 45, 160, 340][id % 6] + Math.random() * 20;
+                this.speed = 0.3 + Math.random() * 0.5;
+                this.curlAmp = 0.8 + Math.random() * 1.6;
+                this.curlFreq = 1.2 + Math.random() * 2.0;
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.streamId = Math.floor(Math.random() * STREAM_COUNT);
+                this.t = Math.random();
+                this.offsetU = (Math.random() - 0.5) * 0.4;
+                this.offsetV = (Math.random() - 0.5) * 0.4;
+                const fibIdx = Math.floor(Math.random() * 2000);
+                const phi = Math.PI * (3 - Math.sqrt(5));
+                const y = 1 - (fibIdx / 1999) * 2;
+                const rad = Math.sqrt(1 - y * y);
+                const theta = phi * fibIdx;
+                this.baseX = Math.cos(theta) * rad;
+                this.baseY = y;
+                this.baseZ = Math.sin(theta) * rad;
+                this.x = this.baseX * SPHERE_R;
+                this.y = this.baseY * SPHERE_R;
+                this.z = this.baseZ * SPHERE_R;
+                this.px = 0; this.py = 0;
+                this.alpha = 0;
+                this.targetAlpha = 0;
+                this.age = Math.random() * 3000;
+                this.lifePhase = Math.random() * Math.PI * 2;
+                this.size = 0.3 + Math.random() * 1.5;
+                this.hue = [195, 280, 30, 45, 160, 340, 10, 55, 200, 300, 120, 350][this.streamId % 12] + (Math.random() - 0.5) * 20;
+                this.sat = 30 + Math.random() * 50;
+                this.light = 40 + Math.random() * 50;
+                this.depth = 0;
+            }
+        }
+
+        let particles = [];
+        let streams = [];
+        let sortedByDepth = new Int32Array(TOTAL_PARTICLES);
+
+        function initAll() {
+            streams = [];
+            for (let i = 0; i < STREAM_COUNT; i++) {
+                streams.push(new StreamCurve(i));
+            }
+            particles = new Array(TOTAL_PARTICLES);
+            for (let i = 0; i < TOTAL_PARTICLES; i++) {
+                particles[i] = new Particle();
+            }
+            sortedByDepth = new Int32Array(TOTAL_PARTICLES);
+            for (let i = 0; i < TOTAL_PARTICLES; i++) sortedByDepth[i] = i;
+        }
+        initAll();
+
+        function updateParticles(time) {
+            const t = time * 0.0002;
+            const depthArr = new Float32Array(TOTAL_PARTICLES);
+            const camAngleY = 0.45;
+            const camAngleX = 0.25;
+            const cosY = Math.cos(camAngleY), sinY = Math.sin(camAngleY);
+            const cosX = Math.cos(camAngleX), sinX = Math.sin(camAngleX);
+            const cx = CX(), cy = CY();
+            const fov = 480;
+
+            for (let i = 0; i < TOTAL_PARTICLES; i++) {
+                const p = particles[i];
+                const s = streams[p.streamId];
+                p.age += s.speed;
+
+                const nScale = 0.0015;
+                const tFlow = p.age * 0.0004;
+                const nx = p.baseX * nScale + s.seed * 0.01;
+                const ny = p.baseY * nScale + s.seed * 0.007;
+                const nz = p.baseZ * nScale + tFlow;
+
+                const d1 = noise3D(nx, ny, nz);
+                const d2 = noise3D(nx * 2.5 + 100, ny * 2.5 + 100, nz * 2.5);
+                const d3 = noise3D(nx * 4 + 200, ny * 4 + 200, nz * 4);
+
+                const flowStrength = s.curlAmp;
+                const dx = (d1 * 0.6 + d2 * 0.3 + d3 * 0.1) * flowStrength * 50;
+                const dy = (d1 * 0.3 + d2 * 0.5 + d3 * 0.2) * flowStrength * 50;
+                const dz = (d1 * 0.2 + d2 * 0.2 + d3 * 0.6) * flowStrength * 50;
+
+                let wx = p.baseX * SPHERE_R + dx;
+                let wy = p.baseY * SPHERE_R + dy;
+                let wz = p.baseZ * SPHERE_R + dz;
+
+                let dist = Math.sqrt(wx * wx + wy * wy + wz * wz);
+                const targetR = SPHERE_R * (0.75 + 0.23 * (0.5 + 0.5 * Math.sin(p.lifePhase + t * 3)));
+                if (dist > 0.001) {
+                    const scale = targetR / dist;
+                    wx *= scale; wy *= scale; wz *= scale;
+                }
+
+                p.x = wx; p.y = wy; p.z = wz;
+
+                const rx = wx * cosY - wz * sinY;
+                const rz = wx * sinY + wz * cosY;
+                const ry = wy * cosX - rz * sinX;
+                const rz2 = wy * sinX + rz * cosX;
+
+                const scale = fov / (fov + rz2);
+                p.px = cx + rx * scale;
+                p.py = cy + ry * scale;
+                p.depth = rz2;
+
+                const densityNoise = noise3D(nx * 1.5, ny * 1.5 + 300, nz * 1.5 + tFlow * 2);
+                const density = (densityNoise + 1) * 0.5;
+                const sharpDensity = Math.pow(density, 1.8);
+                const streamDensity = sharpDensity * s.thickness;
+                p.targetAlpha = 0.04 + streamDensity * 0.45;
+
+                if (p.alpha < p.targetAlpha) {
+                    p.alpha += (p.targetAlpha - p.alpha) * 0.06;
+                } else {
+                    p.alpha += (p.targetAlpha - p.alpha) * 0.03;
+                }
+
+                if (p.age > 4000) {
+                    const fibIdx = Math.floor(Math.random() * 2000);
+                    const phi = Math.PI * (3 - Math.sqrt(5));
+                    const y = 1 - (fibIdx / 1999) * 2;
+                    const rad = Math.sqrt(1 - y * y);
+                    const theta = phi * fibIdx;
+                    p.baseX = Math.cos(theta) * rad;
+                    p.baseY = y;
+                    p.baseZ = Math.sin(theta) * rad;
+                    p.age = Math.random() * 500;
+                    p.alpha = 0;
+                    p.lifePhase = Math.random() * Math.PI * 2;
+                    p.hue = [195, 280, 30, 45, 160, 340, 10, 55, 200, 300, 120, 350][p.streamId % 12] + (Math.random() - 0.5) * 20;
+                    p.sat = 30 + Math.random() * 50;
+                    p.light = 40 + Math.random() * 50;
+                }
+                depthArr[i] = p.depth;
+            }
+            sortedByDepth.sort((a, b) => depthArr[a] - depthArr[b]);
+        }
+
+        function renderParticles(time) {
+            const cx = CX(), cy = CY();
+
+            ctx.clearRect(0, 0, W, H);
+
+            const halo = ctx.createRadialGradient(cx, cy, SPHERE_R * 0.5, cx, cy, SPHERE_R * 1.2);
+            halo.addColorStop(0, 'rgba(0,0,0,0)');
+            halo.addColorStop(0.4, 'rgba(180,140,220,0.04)');
+            halo.addColorStop(0.7, 'rgba(140,200,180,0.03)');
+            halo.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath();
+            ctx.arc(cx, cy, SPHERE_R * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            for (let si = 0; si < sortedByDepth.length; si++) {
+                const p = particles[sortedByDepth[si]];
+                if (p.alpha < 0.006) continue;
+
+                const distFromCenter = Math.hypot(p.px - cx, p.py - cy) / SPHERE_R;
+                let edgeFade = 1;
+                if (distFromCenter > 0.90) {
+                    edgeFade = Math.max(0, 1 - (distFromCenter - 0.90) * 18);
+                }
+                const alpha = p.alpha * edgeFade;
+                if (alpha < 0.004) continue;
+
+                ctx.fillStyle = `hsla(${p.hue}, ${p.sat}%, ${p.light}%, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.px, p.py, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.strokeStyle = 'rgba(160,200,240,0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(cx, cy, SPHERE_R, 0, Math.PI * 2);
+            ctx.stroke();
+
+            const inner = ctx.createRadialGradient(cx, cy, SPHERE_R * 0.2, cx, cy, SPHERE_R * 0.8);
+            inner.addColorStop(0, 'rgba(160,190,225,0.02)');
+            inner.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = inner;
+            ctx.beginPath();
+            ctx.arc(cx, cy, SPHERE_R * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Beast image particle glows
+            drawBeastGlow(time);
+            // Arrows showing the generating cycle (相生)
+            drawCycleArrows(time);
+        }
+
+        function drawBeastGlow(time) {
+            const t = time * 0.0005;
+            const beastR = 143; // half of 286px image
+            const gap = 30;
+
+            const beasts = [
+                { el: '.beast-top',  hue: [280, 310], label: '玄武' },
+                { el: '.beast-bottom', hue: [5, 30], label: '朱雀' },
+                { el: '.beast-left', hue: [195, 220], label: '白虎' },
+                { el: '.beast-right', hue: [30, 60], label: '青龙' },
+            ];
+
+            beasts.forEach((b, bi) => {
+                const el = document.querySelector(b.el);
+                if (!el || !el.classList.contains('show')) return;
+                const rect = el.getBoundingClientRect();
+                const bCx = rect.left + rect.width / 2;
+                const bCy = rect.top + rect.height / 2;
+                const glowR = beastR + gap;
+
+                const particleCount = 80;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (i / particleCount) * Math.PI * 2 + t * (bi % 2 === 0 ? 1 : -1);
+                    const rad = glowR + Math.sin(i * 7 + t * 3) * 8;
+                    const px = bCx + Math.cos(angle) * rad;
+                    const py = bCy + Math.sin(angle) * rad;
+
+                    const pulse = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(i * 0.8 + t * 4 + bi));
+                    const alpha = 0.15 * pulse;
+                    const hue = b.hue[0] + Math.random() * (b.hue[1] - b.hue[0]);
+                    const size = 0.6 + Math.random() * 1.2;
+
+                    ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Also draw subtle ring
+                ctx.strokeStyle = `hsla(${(b.hue[0] + b.hue[1]) / 2}, 60%, 65%, ${0.05 + Math.sin(t * 2 + bi) * 0.02})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(bCx, bCy, glowR, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+        }
+
+        function drawCycleArrows(time) {
+            const t = time * 0.0003;
+            const beastR = 143; // half of image width
+            const arrowGap = 40; // gap from image edge
+
+            const getEdgePoint = (selector, angleOffset) => {
+                const el = document.querySelector(selector);
+                if (!el || !el.classList.contains('show')) return null;
+                const r = el.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+                const rad = beastR + arrowGap;
+                return { x: cx + Math.cos(angleOffset) * rad, y: cy + Math.sin(angleOffset) * rad, cx, cy };
+            };
+
+            // 五行相生: 青龙(右/木) -> 朱雀(下/火) -> 白虎(左/金) -> 玄武(上/水) -> 青龙(右/木)
+            const pairs = [
+                { from: '.beast-right', to: '.beast-bottom', color: 'rgba(255,200,130,',  fromAngle: Math.PI * 1.6, toAngle: Math.PI * 0.4 },  // 青龙->朱雀
+                { from: '.beast-bottom', to: '.beast-left',   color: 'rgba(255,180,140,',  fromAngle: Math.PI * 0.9, toAngle: Math.PI * 1.1 },  // 朱雀->白虎
+                { from: '.beast-left',   to: '.beast-top',    color: 'rgba(180,220,255,',  fromAngle: Math.PI * 0.6, toAngle: Math.PI * 1.4 },  // 白虎->玄武
+                { from: '.beast-top',    to: '.beast-right',  color: 'rgba(200,180,250,',  fromAngle: Math.PI * 1.1, toAngle: Math.PI * 0.1 },  // 玄武->青龙
+            ];
+
+            pairs.forEach((pair, pi) => {
+                const from = getEdgePoint(pair.from, pair.fromAngle);
+                const to = getEdgePoint(pair.to, pair.toAngle);
+                if (!from || !to) return;
+
+                const dx = to.x - from.x;
+                const dy = to.y - from.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Control point: outward curve
+                const cx0 = (from.x + to.x) / 2;
+                const cy0 = (from.y + to.y) / 2;
+                const perpX = -dy / dist;
+                const perpY = dx / dist;
+                const cpDist = dist * 0.3;
+                const cpx = cx0 + perpX * cpDist;
+                const cpy = cy0 + perpY * cpDist;
+
+                // Much lighter colors
+                const dashOffset = t * 150;
+                const pulse = 0.5 + 0.5 * Math.sin(t * 2 + pi * 1.5);
+                const alpha = 0.08 + pulse * 0.1;
+
+                // Glow line
+                ctx.strokeStyle = pair.color + alpha * 0.5 + ')';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([6, 14]);
+                ctx.lineDashOffset = -dashOffset;
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.quadraticCurveTo(cpx, cpy, to.x, to.y);
+                ctx.stroke();
+
+                // Thin dashed line
+                ctx.strokeStyle = pair.color + alpha + ')';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 18]);
+                ctx.lineDashOffset = -dashOffset * 1.3;
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.quadraticCurveTo(cpx, cpy, to.x, to.y);
+                ctx.stroke();
+
+                // Small arrowhead
+                const t2 = 0.94;
+                const ax = (1 - t2) * (1 - t2) * from.x + 2 * (1 - t2) * t2 * cpx + t2 * t2 * to.x;
+                const ay = (1 - t2) * (1 - t2) * from.y + 2 * (1 - t2) * t2 * cpy + t2 * t2 * to.y;
+                const arrowAngle = Math.atan2(to.y - ay, to.x - ax);
+                const arrowSize = 6;
+
+                ctx.setLineDash([]);
+                ctx.fillStyle = pair.color + alpha + ')';
+                ctx.beginPath();
+                ctx.moveTo(
+                    ax + Math.cos(arrowAngle) * arrowSize,
+                    ay + Math.sin(arrowAngle) * arrowSize
+                );
+                ctx.lineTo(
+                    ax + Math.cos(arrowAngle + 2.5) * arrowSize * 0.7,
+                    ay + Math.sin(arrowAngle + 2.5) * arrowSize * 0.7
+                );
+                ctx.lineTo(
+                    ax + Math.cos(arrowAngle - 2.5) * arrowSize * 0.7,
+                    ay + Math.sin(arrowAngle - 2.5) * arrowSize * 0.7
+                );
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            ctx.setLineDash([]);
+        }
+
+        function loop(time) {
+            updateParticles(time);
+            renderParticles(time);
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+
+        // Show beasts with staggered animation
+        setTimeout(() => {
+            document.querySelector('.beast-top').classList.add('show');
+        }, 300);
+        setTimeout(() => {
+            document.querySelector('.beast-bottom').classList.add('show');
+        }, 500);
+        setTimeout(() => {
+            document.querySelector('.beast-left').classList.add('show');
+        }, 700);
+        setTimeout(() => {
+            document.querySelector('.beast-right').classList.add('show');
+        }, 900);
+
+        // 页面加载时更新四象点亮状态
+        updateBeastUnlock();
+
+        // ============================================================
+        // 背景音乐与音量控制
+        // ============================================================
+        const bgMusic = document.getElementById('bgMusic');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLabel = document.getElementById('volumeLabel');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        let volumeVisible = false;
+
+        // 恢复上次音量
+        const savedVol = sessionStorage.getItem('bgMusicVolume');
+        if (savedVol !== null) {
+            volumeSlider.value = savedVol;
+            volumeLabel.textContent = savedVol + '%';
+        }
+        bgMusic.volume = volumeSlider.value / 100;
+
+        // 用户首次点击页面任意位置后开始播放
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    updateVolumeIcon();
+                }).catch(() => {});
+            }
+        }
+        document.addEventListener('click', tryPlayMusic, { once: false });
+
+        function toggleVolume() {
+            volumeVisible = !volumeVisible;
+            if (volumeVisible) {
+                volumeSliderWrap.classList.add('show');
+            } else {
+                volumeSliderWrap.classList.remove('show');
+            }
+        }
+
+        function onVolumeChange(val) {
+            bgMusic.volume = val / 100;
+            volumeLabel.textContent = val + '%';
+            updateVolumeIcon();
+        }
+
+        function updateVolumeIcon() {
+            const vol = volumeSlider.value / 100;
+            if (vol <= 0 || bgMusic.muted) {
+                volumeBtn.textContent = '🔇';
+            } else if (vol < 0.33) {
+                volumeBtn.textContent = '🔈';
+            } else if (vol < 0.66) {
+                volumeBtn.textContent = '🔉';
+            } else {
+                volumeBtn.textContent = '🔊';
+            }
+        }
+
+        // 点击页面其他区域关闭滑块
+        document.addEventListener('click', function(e) {
+            if (volumeVisible && !e.target.closest('#volumeBtn') && !e.target.closest('#volumeSliderWrap')) {
+                volumeVisible = false;
+                volumeSliderWrap.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

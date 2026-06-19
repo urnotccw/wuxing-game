@@ -1,0 +1,594 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金牛铸坊 - 牛金牛</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            width: 100vw;
+            height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            padding: 6px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .event-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .event-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            object-fit: contain;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .forge-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(ellipse at 50% 60%, rgba(200,160,100,0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .event-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .event-title {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 6px;
+            color: rgba(212,163,115,0.9);
+            margin-bottom: 4px;
+            text-shadow: 0 0 30px rgba(212,163,115,0.3);
+        }
+        .event-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 4px;
+            margin-bottom: 24px;
+        }
+
+        .character-area {
+            margin-bottom: 20px;
+        }
+        .character-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(212,163,115,0.2);
+            box-shadow: 0 0 30px rgba(212,163,115,0.15);
+        }
+        .character-name {
+            font-size: 14px;
+            color: rgba(212,163,115,0.6);
+            letter-spacing: 3px;
+            margin-top: 8px;
+        }
+
+        .event-narrative {
+            font-size: 14px;
+            line-height: 1.9;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 30px;
+            padding: 0 20px;
+            letter-spacing: 1px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .choices {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 600px;
+            margin: 0 auto 16px;
+        }
+
+        .choice-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(212,163,115,0.2);
+            border-radius: 12px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #fff;
+            min-width: 160px;
+            flex: 1;
+        }
+        .choice-btn:hover:not(.disabled) {
+            background: rgba(212,163,115,0.1);
+            border-color: rgba(212,163,115,0.4);
+            box-shadow: 0 0 25px rgba(212,163,115,0.15);
+            transform: translateY(-2px);
+        }
+        .choice-btn .choice-name {
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: rgba(212,163,115,0.85);
+            margin-bottom: 6px;
+        }
+        .choice-btn .choice-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.5;
+        }
+        .choice-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .choice-btn.selected {
+            border-color: rgba(212,163,115,0.6);
+            background: rgba(212,163,115,0.12);
+            box-shadow: 0 0 20px rgba(212,163,115,0.2);
+        }
+
+        .result-text {
+            font-size: 14px;
+            color: #ffd43b;
+            letter-spacing: 1px;
+            margin: 12px 0;
+            min-height: 24px;
+        }
+
+        .continue-btn {
+            background: rgba(212,163,115,0.12);
+            border: 1px solid rgba(212,163,115,0.3);
+            border-radius: 10px;
+            padding: 10px 32px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            display: none;
+            margin: 0 auto;
+        }
+        .continue-btn.show {
+            display: inline-block;
+        }
+        .continue-btn:hover {
+            background: rgba(212,163,115,0.2);
+            box-shadow: 0 0 20px rgba(212,163,115,0.15);
+        }
+
+        .event-footer {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 2;
+            font-size: 12px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 3px;
+        }
+
+        .card-hint {
+            color: rgba(212,163,115,0.7);
+            cursor: help;
+            border-bottom: 1px dashed rgba(212,163,115,0.3);
+            transition: color 0.2s;
+        }
+        .card-hint:hover { color: rgba(212,163,115,1); }
+
+        /* tooltip（复用 battle.html 样式） */
+        .card-tooltip {
+            position: fixed;
+            z-index: 9999;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            min-width: 220px;
+            max-width: 280px;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1.6;
+            pointer-events: none;
+            display: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .card-tooltip.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card-tooltip .tt-name {
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-tooltip .tt-element {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+        }
+        .card-tooltip .tt-base { color: #fff; margin: 4px 0; }
+        .card-tooltip .tt-special { color: #ffd43b; margin: 4px 0; }
+        .card-tooltip .tt-role {
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 音量控制按钮 */
+        .volume-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .volume-slider-wrap {
+            position: fixed;
+            top: 20px;
+            right: 72px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .volume-slider-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200, 180, 240, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(220, 200, 255, 1);
+            box-shadow: 0 0 12px rgba(180, 150, 220, 0.5);
+        }
+        .volume-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            min-width: 28px;
+            text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
+    <button class="back-btn" onclick="location.href='beast.html'">← 返回</button>
+    <!-- 音量控制 -->
+    <button class="volume-btn" id="volumeBtn" onclick="toggleVolume()" title="音量">🔊</button>
+    <div class="volume-slider-wrap" id="volumeSliderWrap">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
+        <span class="volume-label" id="volumeLabel">50%</span>
+    </div>
+
+    <img class="event-bg" src="牛金牛.png" alt="" onerror="this.style.display='none'">
+    <div class="forge-overlay"></div>
+
+    <div class="event-container">
+        <div class="event-content">
+            <div class="event-title">✦ 金牛铸坊 ✦</div>
+            <div class="event-subtitle">牛金牛 · 玄武第六宿</div>
+
+            <div class="character-area">
+                <img class="character-img" src="牛金牛.png" alt="牛金牛" onerror="this.style.display='none'">
+                <div class="character-name">牛金牛</div>
+            </div>
+
+            <div class="event-narrative">
+                玄铁炉火低鸣，牛金牛伏在星砂堆旁。<br>
+                它抬起沉重的金角，看向你的牌组。<br>
+                "最终审判将至，你可以选择一次铸造。"
+            </div>
+
+            <div class="choices" id="choices">
+                <div class="choice-btn" onclick="chooseReward('gold')">
+                    <div class="choice-name">⚔️ 铸金成刃</div>
+                    <div class="choice-desc">随机获得1张金系进阶牌<br>
+                        <span class="card-hint" onmouseenter="showTooltip('虎爪金',event)" onmouseleave="hideTooltip()">虎爪金</span> /
+                        <span class="card-hint" onmouseenter="showTooltip('星星金',event)" onmouseleave="hideTooltip()">星星金</span>
+                    </div>
+                </div>
+                <div class="choice-btn" onclick="chooseReward('earth')">
+                    <div class="choice-name">🛡️ 厚土筑阵</div>
+                    <div class="choice-desc">随机获得1张土系进阶牌<br>
+                        <span class="card-hint" onmouseenter="showTooltip('琥珀土',event)" onmouseleave="hideTooltip()">琥珀土</span> /
+                        <span class="card-hint" onmouseenter="showTooltip('山土',event)" onmouseleave="hideTooltip()">山土</span>
+                    </div>
+                </div>
+                <div class="choice-btn" onclick="chooseReward('heal')">
+                    <div class="choice-name">💚 修复伤势</div>
+                    <div class="choice-desc">回复 15 点生命</div>
+                </div>
+            </div>
+
+            <div class="result-text" id="resultText"></div>
+
+            <button class="continue-btn" id="continueBtn" onclick="continueToBoss()">继续前进 →</button>
+        </div>
+    </div>
+
+    <div class="card-tooltip" id="cardTooltip"></div>
+
+    <div class="event-footer">— 选择后将进入最终 Boss：斗木獬 —</div>
+
+    <script>
+        let rewardChosen = false;
+
+        function getDeck() {
+            try {
+                const stored = sessionStorage.getItem('playerDeck');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                }
+            } catch (e) {}
+            return [
+                { name: '金', element: '金' }, { name: '金', element: '金' },
+                { name: '木', element: '木' }, { name: '木', element: '木' },
+                { name: '水', element: '水' }, { name: '水', element: '水' },
+                { name: '火', element: '火' }, { name: '火', element: '火' },
+                { name: '土', element: '土' }, { name: '土', element: '土' },
+            ];
+        }
+
+        function getPlayerHp() {
+            try {
+                return parseInt(sessionStorage.getItem('playerHp'), 10) || 50;
+            } catch (e) { return 50; }
+        }
+
+        function getPlayerMaxHp() {
+            try {
+                return parseInt(sessionStorage.getItem('playerMaxHp'), 10) || 50;
+            } catch (e) { return 50; }
+        }
+
+        function saveDeck(deck) {
+            sessionStorage.setItem('playerDeck', JSON.stringify(deck));
+        }
+
+        function saveHp(hp) {
+            sessionStorage.setItem('playerHp', String(hp));
+        }
+
+        // 卡牌数据（tooltip用）
+        const CARD_DATA = {
+            '虎爪金': { element: '金', base: '造成8点伤害', special: '如果敌人有护盾，额外造成5点破盾伤害', role: '破盾输出' },
+            '星星金': { element: '金', base: '造成5点伤害', special: '本次大结算额外+5伤害，最多触发1次', role: '大结算辅助' },
+            '琥珀土': { element: '土', base: '获得8点护盾', special: '同时回复2点生命', role: '防御+回复' },
+            '山土':   { element: '土', base: '获得12点护盾', special: '如果本回合触发大结算，额外获得5点护盾', role: '高额防御' },
+        };
+
+        function showTooltip(cardName, e) {
+            const data = CARD_DATA[cardName];
+            if (!data) return;
+            const tip = document.getElementById('cardTooltip');
+            const colors = { '金': '#ffd700', '土': '#d4a373' };
+            const elColor = colors[data.element] || '#fff';
+            tip.innerHTML = `
+                <div class="tt-name">
+                    <span>${cardName}</span>
+                    <span class="tt-element" style="color:${elColor}">${data.element}</span>
+                </div>
+                <div class="tt-base">基础：${data.base}</div>
+                <div class="tt-special">特殊：${data.special}</div>
+                <div class="tt-role">定位：${data.role}</div>
+            `;
+            tip.style.display = 'block';
+            tip.style.left = '0px';
+            tip.style.top = '0px';
+            const x = e.clientX + 20;
+            const y = e.clientY - 20;
+            const rect = tip.getBoundingClientRect();
+            const maxX = window.innerWidth - rect.width - 10;
+            const maxY = window.innerHeight - rect.height - 10;
+            tip.style.left = Math.min(x, maxX) + 'px';
+            tip.style.top = Math.min(y, maxY) + 'px';
+            tip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            const tip = document.getElementById('cardTooltip');
+            tip.classList.remove('show');
+            tip.style.display = 'none';
+        }
+
+        function markNiujinniuCleared() {
+            const cleared = JSON.parse(sessionStorage.getItem('clearedBeasts') || '[]');
+            if (!cleared.includes('牛金牛')) {
+                cleared.push('牛金牛');
+                sessionStorage.setItem('clearedBeasts', JSON.stringify(cleared));
+            }
+        }
+
+        function chooseReward(type) {
+            if (rewardChosen) return;
+            rewardChosen = true;
+
+            // 立即标记已通过
+            markNiujinniuCleared();
+
+            // 禁用所有按钮
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.add('disabled'));
+            const resultEl = document.getElementById('resultText');
+            const deck = getDeck();
+
+            if (type === 'gold') {
+                const pool = ['虎爪金', '星星金'];
+                const cardName = pool[Math.floor(Math.random() * pool.length)];
+                deck.push({ name: cardName, element: '金', id: cardName + '-goldox-' + Date.now() });
+                saveDeck(deck);
+                resultEl.textContent = '你获得了【' + cardName + '】。';
+                document.querySelector('.choice-btn[onclick*="gold"]').classList.add('selected');
+            } else if (type === 'earth') {
+                const pool = ['琥珀土', '山土'];
+                const cardName = pool[Math.floor(Math.random() * pool.length)];
+                deck.push({ name: cardName, element: '土', id: cardName + '-goldox-' + Date.now() });
+                saveDeck(deck);
+                resultEl.textContent = '你获得了【' + cardName + '】。';
+                document.querySelector('.choice-btn[onclick*="earth"]').classList.add('selected');
+            } else if (type === 'heal') {
+                const hp = getPlayerHp();
+                const maxHp = getPlayerMaxHp();
+                const newHp = Math.min(maxHp, hp + 15);
+                saveHp(newHp);
+                resultEl.textContent = '牛金牛修复了你的伤势，生命回复 ' + (newHp - hp) + ' 点。';
+                document.querySelector('.choice-btn[onclick*="heal"]').classList.add('selected');
+            }
+
+            // 显示继续按钮
+            document.getElementById('continueBtn').classList.add('show');
+        }
+
+        function continueToBoss() {
+            // 设置下一关为斗木獬（索引4）
+            sessionStorage.setItem('battleLevel', '4');
+            window.location.href = 'battle.html';
+        }
+        // 背景音乐与音量控制
+        const bgMusic = document.getElementById('bgMusic');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLabel = document.getElementById('volumeLabel');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        let volumeVisible = false;
+        const savedVol = sessionStorage.getItem('bgMusicVolume');
+        if (savedVol !== null) {
+            volumeSlider.value = savedVol;
+            volumeLabel.textContent = savedVol + '%';
+        }
+        bgMusic.volume = volumeSlider.value / 100;
+        updateVolumeIcon();
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => { updateVolumeIcon(); }).catch(() => {});
+            }
+        }
+        document.addEventListener('click', tryPlayMusic, { once: false });
+        function toggleVolume() {
+            volumeVisible = !volumeVisible;
+            if (volumeVisible) { volumeSliderWrap.classList.add('show'); }
+            else { volumeSliderWrap.classList.remove('show'); }
+        }
+        function onVolumeChange(val) {
+            bgMusic.volume = val / 100;
+            volumeLabel.textContent = val + '%';
+            sessionStorage.setItem('bgMusicVolume', val);
+            updateVolumeIcon();
+        }
+        function updateVolumeIcon() {
+            const vol = volumeSlider.value / 100;
+            if (vol <= 0 || bgMusic.muted) { volumeBtn.textContent = '🔇'; }
+            else if (vol < 0.33) { volumeBtn.textContent = '🔈'; }
+            else if (vol < 0.66) { volumeBtn.textContent = '🔉'; }
+            else { volumeBtn.textContent = '🔊'; }
+        }
+        document.addEventListener('click', function(e) {
+            if (volumeVisible && !e.target.closest('#volumeBtn') && !e.target.closest('#volumeSliderWrap')) {
+                volumeVisible = false;
+                volumeSliderWrap.classList.remove('show');
+            }
+        });    </script>
+</body>
+</html>

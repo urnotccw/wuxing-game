@@ -1,0 +1,537 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五行游戏</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            width: 100vw;
+            min-height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            padding: 30px 40px 60px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            padding: 6px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .round-info {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .info-label {
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+        .info-value {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        .next-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            font-size: 14px;
+            padding: 10px 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+        }
+        .next-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+        .next-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .section-title {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            letter-spacing: 3px;
+            margin: 24px 0 16px;
+        }
+
+        /* 抽卡区 */
+        .draw-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
+            padding: 30px 0;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed rgba(255,255,255,0.1);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .draw-cards {
+            display: flex;
+            gap: 16px;
+        }
+        .hand-card {
+            width: 100px;
+            height: 150px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: dealIn 0.5s ease backwards;
+        }
+        .hand-card:nth-child(1) { animation-delay: 0.1s; }
+        .hand-card:nth-child(2) { animation-delay: 0.2s; }
+        .hand-card:nth-child(3) { animation-delay: 0.3s; }
+        .hand-card:nth-child(4) { animation-delay: 0.4s; }
+        .hand-card:nth-child(5) { animation-delay: 0.5s; }
+        @keyframes dealIn {
+            from { opacity: 0; transform: translateY(-30px) rotate(-5deg); }
+            to { opacity: 1; transform: translateY(0) rotate(0); }
+        }
+        .hand-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+        .hand-card:hover {
+            transform: translateY(-8px);
+        }
+        .hand-card.selected {
+            transform: translateY(-12px);
+            box-shadow: 0 0 0 2px #fff, 0 0 20px rgba(255,255,255,0.3);
+        }
+        .hand-card.placed {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .draw-empty {
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+            letter-spacing: 3px;
+        }
+
+        /* 6个卡槽区 */
+        .slots-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card-slot {
+            aspect-ratio: 2 / 3;
+            max-width: 180px;
+            border: 1.5px dashed rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-slot.active {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.04);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        .card-slot.filled {
+            border-style: solid;
+            border-color: rgba(255,255,255,0.15);
+        }
+        .card-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            animation: placeIn 0.4s ease;
+        }
+        @keyframes placeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 回合状态提示 */
+        .status-msg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            letter-spacing: 3px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+        .status-msg.show {
+            opacity: 1;
+        }
+        /* 音量控制按钮 */
+        .volume-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .volume-slider-wrap {
+            position: fixed;
+            top: 20px;
+            right: 72px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .volume-slider-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200, 180, 240, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(220, 200, 255, 1);
+            box-shadow: 0 0 12px rgba(180, 150, 220, 0.5);
+        }
+        .volume-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            min-width: 28px;
+            text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
+    <button class="back-btn" onclick="history.back()">← 返回</button>
+    <!-- 音量控制 -->
+    <button class="volume-btn" id="volumeBtn" onclick="toggleVolume()" title="音量">🔊</button>
+    <div class="volume-slider-wrap" id="volumeSliderWrap">
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
+        <span class="volume-label" id="volumeLabel">50%</span>
+    </div>
+
+    <div class="header">
+        <div class="round-info">
+            <div class="info-item">
+                <div class="info-label">回合</div>
+                <div class="info-value" id="roundNum">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">已放置</div>
+                <div class="info-value"><span id="placedCount">0</span> / 2</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">总卡数</div>
+                <div class="info-value" id="totalCards">15</div>
+            </div>
+        </div>
+        <button class="next-btn" id="nextBtn" onclick="nextRound()" disabled>下一回合 →</button>
+    </div>
+
+    <div class="section-title">本回合手牌</div>
+    <div class="draw-area">
+        <div class="draw-cards" id="drawCards"></div>
+    </div>
+
+    <div class="section-title">放置区（点击卡牌选择，再点击空槽放置）</div>
+    <div class="slots-area" id="slotsArea"></div>
+
+    <div class="status-msg" id="statusMsg"></div>
+
+    <script>
+        // 15张卡牌
+        const allCards = [
+            '冰水.png', '虎爪金.png', '琥珀土.png', '火.png', '金.png',
+            '莲花木.png', '鹿木.png', '玫瑰火.png', '木.png', '山土.png',
+            '水.png', '土.png', '星星金.png', '羽毛火.png', '月亮水.png'
+        ];
+
+        let round = 1;
+        let handCards = [];      // 当前手牌
+        let selectedCardIdx = -1; // 选中的手牌索引
+        let placedSlots = new Array(6).fill(null); // 6个卡槽
+        let placedThisRound = 0;
+        let remainingPool = [...allCards];
+
+        const drawCardsEl = document.getElementById('drawCards');
+        const slotsAreaEl = document.getElementById('slotsArea');
+        const roundNumEl = document.getElementById('roundNum');
+        const placedCountEl = document.getElementById('placedCount');
+        const totalCardsEl = document.getElementById('totalCards');
+        const nextBtnEl = document.getElementById('nextBtn');
+        const statusMsgEl = document.getElementById('statusMsg');
+
+        function showStatus(msg, duration = 1500) {
+            statusMsgEl.textContent = msg;
+            statusMsgEl.classList.add('show');
+            setTimeout(() => statusMsgEl.classList.remove('show'), duration);
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function initSlots() {
+            slotsAreaEl.innerHTML = '';
+            placedSlots.forEach((card, idx) => {
+                const slot = document.createElement('div');
+                slot.className = 'card-slot' + (card ? ' filled' : '');
+                slot.dataset.idx = idx;
+                if (card) {
+                    slot.innerHTML = `<img src="卡牌/${card}" alt="${card}">`;
+                }
+                slot.addEventListener('click', () => onSlotClick(idx));
+                slotsAreaEl.appendChild(slot);
+            });
+        }
+
+        function drawHand() {
+            const n = Math.min(5, remainingPool.length);
+            const shuffled = shuffle(remainingPool);
+            handCards = shuffled.slice(0, n).map(name => ({
+                name,
+                selected: false
+            }));
+            renderHand();
+        }
+
+        function renderHand() {
+            drawCardsEl.innerHTML = '';
+            if (handCards.length === 0) {
+                drawCardsEl.innerHTML = '<div class="draw-empty">本回合无可用手牌</div>';
+                return;
+            }
+            handCards.forEach((card, idx) => {
+                const el = document.createElement('div');
+                el.className = 'hand-card';
+                if (card.selected) el.classList.add('selected');
+                if (card.placed) el.classList.add('placed');
+                el.innerHTML = `<img src="卡牌/${card.name}" alt="${card.name}">`;
+                el.addEventListener('click', () => onHandClick(idx));
+                drawCardsEl.appendChild(el);
+            });
+        }
+
+        function onHandClick(idx) {
+            if (handCards[idx].placed) return;
+            if (placedThisRound >= 2) {
+                showStatus('本回合已放置 2 张');
+                return;
+            }
+            // 取消其他选择
+            handCards.forEach(c => c.selected = false);
+            handCards[idx].selected = !handCards[idx].selected;
+            selectedCardIdx = handCards[idx].selected ? idx : -1;
+            renderHand();
+            // 高亮空槽
+            updateSlotHighlight();
+        }
+
+        function onSlotClick(slotIdx) {
+            if (placedSlots[slotIdx]) {
+                showStatus('该卡槽已有卡牌');
+                return;
+            }
+            if (selectedCardIdx === -1) {
+                showStatus('请先选择手牌');
+                return;
+            }
+            if (placedThisRound >= 2) {
+                showStatus('本回合已放置 2 张');
+                return;
+            }
+            // 放置
+            const card = handCards[selectedCardIdx];
+            placedSlots[slotIdx] = card.name;
+            card.placed = true;
+            card.selected = false;
+            placedThisRound++;
+            selectedCardIdx = -1;
+            // 从池中移除
+            const poolIdx = remainingPool.indexOf(card.name);
+            if (poolIdx > -1) remainingPool.splice(poolIdx, 1);
+            updateUI();
+        }
+
+        function updateSlotHighlight() {
+            const slots = slotsAreaEl.querySelectorAll('.card-slot');
+            slots.forEach((slot, idx) => {
+                if (!placedSlots[idx] && selectedCardIdx !== -1 && placedThisRound < 2) {
+                    slot.classList.add('active');
+                } else {
+                    slot.classList.remove('active');
+                }
+            });
+        }
+
+        function updateUI() {
+            roundNumEl.textContent = round;
+            placedCountEl.textContent = placedThisRound;
+            totalCardsEl.textContent = remainingPool.length;
+            nextBtnEl.disabled = placedThisRound < 2 || remainingPool.length === 0;
+            initSlots();
+            renderHand();
+            updateSlotHighlight();
+        }
+
+        function nextRound() {
+            if (placedThisRound < 2) {
+                showStatus('请先放置 2 张卡牌');
+                return;
+            }
+            if (remainingPool.length === 0) {
+                showStatus('所有卡牌已抽完');
+                return;
+            }
+            round++;
+            placedThisRound = 0;
+            selectedCardIdx = -1;
+            handCards = [];
+            drawHand();
+            updateUI();
+            showStatus('第 ' + round + ' 回合开始');
+        }
+
+        // 初始化
+        initSlots();
+        drawHand();
+        updateUI();
+        // 背景音乐与音量控制
+        const bgMusic = document.getElementById('bgMusic');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLabel = document.getElementById('volumeLabel');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        let volumeVisible = false;
+        const savedVol = sessionStorage.getItem('bgMusicVolume');
+        if (savedVol !== null) {
+            volumeSlider.value = savedVol;
+            volumeLabel.textContent = savedVol + '%';
+        }
+        bgMusic.volume = volumeSlider.value / 100;
+        updateVolumeIcon();
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => { updateVolumeIcon(); }).catch(() => {});
+            }
+        }
+        document.addEventListener('click', tryPlayMusic, { once: false });
+        function toggleVolume() {
+            volumeVisible = !volumeVisible;
+            if (volumeVisible) { volumeSliderWrap.classList.add('show'); }
+            else { volumeSliderWrap.classList.remove('show'); }
+        }
+        function onVolumeChange(val) {
+            bgMusic.volume = val / 100;
+            volumeLabel.textContent = val + '%';
+            sessionStorage.setItem('bgMusicVolume', val);
+            updateVolumeIcon();
+        }
+        function updateVolumeIcon() {
+            const vol = volumeSlider.value / 100;
+            if (vol <= 0 || bgMusic.muted) { volumeBtn.textContent = '🔇'; }
+            else if (vol < 0.33) { volumeBtn.textContent = '🔈'; }
+            else if (vol < 0.66) { volumeBtn.textContent = '🔉'; }
+            else { volumeBtn.textContent = '🔊'; }
+        }
+        document.addEventListener('click', function(e) {
+            if (volumeVisible && !e.target.closest('#volumeBtn') && !e.target.closest('#volumeSliderWrap')) {
+                volumeVisible = false;
+                volumeSliderWrap.classList.remove('show');
+            }
+        });    </script>
+</body>
+</html>
