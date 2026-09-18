@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>星宿详情</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -351,8 +351,10 @@
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
         }
     </style>
+    <link rel="stylesheet" href="mobile.css?v=20260918">
+    <script src="mobile.js?v=20260918" defer></script>
 </head>
-<body>
+<body data-page="beast">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
     <button class="back-btn" onclick="location.href='page2.html'">← 返回</button>
     <button class="back-btn" style="top:20px; left:auto; right:80px;" onclick="location.href='page2.html'">主页</button>
@@ -534,6 +536,7 @@
                 el.style.position = 'absolute';
                 el.style.left = pos.left;
                 el.style.top = pos.top;
+                el.style.setProperty('--mobile-star-top', ['47%', '42%', '57%', '52%', '42%', '48%', '50%'][starPositions.indexOf(pos)]);
                 el.style.transform = 'translate(-50%, -50%)';
 
                 // 顺序解锁：只有第1关或前1关已通关的关卡才可进入
@@ -571,6 +574,7 @@
                 const lockTag = (!isCleared && !isUnlocked) ? '<div class="locked-tag">🔒 未解锁</div>' : '';
                 el.innerHTML = `
                     <img class="star-pic" src="${folder}/${pos.name}.png" alt="${pos.name}" onerror="this.style.display='none'">
+                    <span class="star-name">${pos.name}</span>
                     ${clearedTag}
                     ${lockTag}
                 `;

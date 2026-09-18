@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>五行星轨</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -58,8 +58,10 @@
             50% { opacity: 0.6; }
         }
     </style>
+    <link rel="stylesheet" href="mobile.css?v=20260918">
+    <script src="mobile.js?v=20260918" defer></script>
 </head>
-<body>
+<body data-page="index">
     <canvas id="canvas"></canvas>
     <div class="story-overlay" id="storyOverlay">
         <div class="story-line" id="line1">星河失序，二十八宿坠入混沌。</div>

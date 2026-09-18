@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>五行星轨 - 四象</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -552,8 +552,10 @@
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
         }
     </style>
+    <link rel="stylesheet" href="mobile.css?v=20260918">
+    <script src="mobile.js?v=20260918" defer></script>
 </head>
-<body>
+<body data-page="page2">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
     <canvas id="canvas"></canvas>
     <div class="hint-bar" id="hintBar">
@@ -807,6 +809,10 @@
 
         // 玩法介绍弹窗
         function openGuide() {
+            if (window.WuxingMobile?.compact) {
+                WuxingMobile.showPanel('玩法介绍', document.querySelector('.guide-body'));
+                return;
+            }
             document.getElementById('guideOverlay').classList.add('show');
         }
         function closeGuide(e) {

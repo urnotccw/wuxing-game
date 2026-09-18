@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -141,6 +141,7 @@
         }
 
         /* 阵法区 */
+        .formation-sidebar { display:flex; flex-direction:column; gap:6px; width:150px; min-width:150px; }
         .formation-area {
             padding: 8px;
             position: relative;
@@ -570,34 +571,6 @@
         .grand-rules .gr-row {
             padding: 1px 0;
         }
-
-        /* 战斗日志 - 左下角固定 */
-        .battle-log {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 20;
-            width: 320px;
-            max-height: 150px;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
-            padding: 12px;
-            overflow-y: auto;
-            font-size: 12px;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.7);
-        }
-        .log-line {
-            padding: 2px 0;
-            border-bottom: 1px dashed rgba(255,255,255,0.05);
-        }
-        .log-line:last-child { border-bottom: none; }
-        .log-damage { color: #ff6b6b; }
-        .log-heal { color: #51cf66; }
-        .log-shield { color: #4dabf7; }
-        .log-buff { color: #ffd43b; }
-        .log-info { color: rgba(255,255,255,0.6); }
 
         /* 左侧玩家区 */
         .player-area {
@@ -3428,8 +3401,10 @@
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
         }
     </style>
+    <link rel="stylesheet" href="mobile.css?v=20260918">
+    <script src="mobile.js?v=20260918" defer></script>
 </head>
-<body>
+<body data-page="battle">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
     <audio id="cardPlaceAudio" src="audio/chupai.mp3" preload="auto"></audio>
     <audio id="hitAudio" src="audio/attack.mp3" preload="auto"></audio>
@@ -3525,12 +3500,13 @@
                 <img class="chart-inline-img" src="五行生克图.png" alt="五行生克图">
             </div>
         </div>
-        <div>
+        <div class="battle-center">
             <div class="formation-area">
-                <div style="display:flex;flex-direction:column;gap:6px;width:150px;min-width:150px;">
+                <div class="formation-sidebar">
                     <div class="effect-preview" id="effectPreview" style="width:100%;min-width:unset;">
                         <div class="ep-empty">放置卡牌后<br>显示效果预览</div>
                     </div>
+                    <button class="toggle-rules-btn mobile-only" onclick="WuxingMobile.showPanel('效果详情', document.getElementById('effectPreview'))">效果详情</button>
                     <button class="toggle-rules-btn" onclick="toggleGrandRules()">⚙ 阵法规则</button>
                     <div class="grand-rules" id="grandRules">
                         <div class="gr-title">大结算规则</div>
@@ -3549,7 +3525,7 @@
             </div>
             <div class="hand-section">
                 <div class="hand-title">本回合手牌</div>
-                <div class="hand-progress" id="handProgress">本回合已放置：0 / 2</div>
+                <div class="mobile-hand-meta"><div class="hand-progress" id="handProgress">本回合已放置：0 / 2</div><button class="card-info-btn mobile-only" onclick="showSelectedCardDetails()">牌面说明</button></div>
                 <div class="hand-area">
                     <div class="hand-cards-inner" id="handArea"></div>
                     <button class="confirm-btn" id="confirmBtn" onclick="resolveTurn()" disabled>确认出牌</button>
@@ -3601,10 +3577,10 @@
                 </div>
             </div>
             <div class="enemy-desc" id="enemyDesc"></div>
+            <button class="toggle-rules-btn mobile-only enemy-details-btn" onclick="WuxingMobile.showPanel('敌人能力', document.getElementById('enemyDesc'))">敌人能力</button>
         </div>
     </div>
 
-    <div class="battle-log" id="battleLog"></div>
 
 
 
@@ -4221,7 +4197,6 @@
         const confirmBtn = document.getElementById('confirmBtn');
         const formationGrid = document.getElementById('formationGrid');
         const handArea = document.getElementById('handArea');
-        const battleLog = document.getElementById('battleLog');
         const statusMsg = document.getElementById('statusMsg');
         const gameOverEl = document.getElementById('gameOver');
         const gameOverContent = document.getElementById('gameOverContent');
@@ -4316,17 +4291,10 @@
             tip.style.display = 'none';
         }
 
-        function addLog(text, type = 'info') {
-            const line = document.createElement('div');
-            line.className = 'log-line log-' + type;
-            line.textContent = '· ' + text;
-            battleLog.appendChild(line);
-            battleLog.scrollTop = battleLog.scrollHeight;
-        }
-
-        function clearLog() {
-            battleLog.innerHTML = '';
-        }
+        // Battle records were removed from both desktop and mobile.
+        // Keep these hooks so existing combat effects do not change.
+        function addLog() {}
+        function clearLog() {}
 
         // 玩家受击震动（玩家图 + 全屏）
         function shakePlayer(dmg = 0) {
@@ -8564,6 +8532,10 @@
         }
 
         function openGuide() {
+            if (window.WuxingMobile?.compact) {
+                WuxingMobile.showPanel('玩法介绍', document.querySelector('.guide-body'));
+                return;
+            }
             document.getElementById('guideOverlay').classList.add('show');
         }
 
@@ -8572,12 +8544,28 @@
             document.getElementById('guideOverlay').classList.remove('show');
         }
 
+        function showSelectedCardDetails() {
+            const card = gameState.hand[gameState.selectedHandIdx];
+            if (!card) { showStatus('先点选一张手牌，再查看牌面说明'); return; }
+            showCardTooltip(card.name, { clientX: 0, clientY: 0 });
+            WuxingMobile.showPanel(card.name + ' · 牌面说明', document.getElementById('cardTooltip'));
+            hideCardTooltip();
+        }
+
         function toggleGrandRules() {
+            if (window.WuxingMobile?.compact) {
+                WuxingMobile.showPanel('阵法规则', document.getElementById('grandRules'));
+                return;
+            }
             const el = document.getElementById('grandRules');
             el.style.display = el.style.display === 'none' ? '' : 'none';
         }
 
         function toggleElementChart() {
+            if (window.WuxingMobile?.compact) {
+                WuxingMobile.showPanel('五行关系', document.getElementById('chartInlinePanel'));
+                return;
+            }
             const panel = document.getElementById('chartInlinePanel');
             panel.style.display = panel.style.display === 'none' ? '' : 'none';
         }
@@ -8844,6 +8832,7 @@
                         e.stopPropagation();
                         if (card.used) return;
                         selectCard(idx);
+                        if (window.WuxingMobile?.compact) hideCardTooltip();
                     });
                     el.addEventListener('mouseenter', (e) => showCardTooltip(card.name, e));
                     el.addEventListener('mousemove', moveCardTooltip);
