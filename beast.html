@@ -356,8 +356,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="星河符阵">
     <link rel="apple-touch-icon" href="五行生克图.png">
-    <link rel="stylesheet" href="mobile.css?v=20260918-fullscreen">
-    <script src="mobile.js?v=20260918-fullscreen" defer></script>
+    <link rel="stylesheet" href="mobile.css?v=20260918-performance">
+    <script src="mobile.js?v=20260918-performance" defer></script>
+    <script src="performance.js?v=20260918-performance"></script>
 </head>
 <body data-page="beast">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
@@ -386,7 +387,7 @@
     <div class="card-tooltip" id="cardTooltip"></div>
 
     <div class="base-map-container" id="mapContainer">
-        <img class="base-map" id="baseMap" src="" alt="底图">
+        <img decoding="async" class="base-map" id="baseMap" src="" alt="底图">
         <div id="overlayContainer"></div>
     </div>
 
@@ -471,7 +472,7 @@
         const name = sessionStorage.getItem('beastName') || '玄武';
         // 设置底图
         const baseMap = document.getElementById('baseMap');
-        baseMap.src = name + '/' + name + '底图.png';
+        baseMap.src = name + '/' + name + '底图.webp';
 
         const folder = name;
         const overlayContainer = document.getElementById('overlayContainer');
@@ -578,7 +579,7 @@
                 const clearedTag = isCleared ? '<div class="cleared-tag">✓ 已通过</div>' : '';
                 const lockTag = (!isCleared && !isUnlocked) ? '<div class="locked-tag">🔒 未解锁</div>' : '';
                 el.innerHTML = `
-                    <img class="star-pic" src="${folder}/${pos.name}.png" alt="${pos.name}" onerror="this.style.display='none'">
+                    <img decoding="async" class="star-pic" src="${folder}/${pos.name}.webp" alt="${pos.name}" onerror="this.style.display='none'">
                     <span class="star-name">${pos.name}</span>
                     ${clearedTag}
                     ${lockTag}
@@ -645,7 +646,7 @@
                 cardEl.className = 'deck-card';
                 const imgName = key.replace('+1', '');
                 cardEl.innerHTML = `
-                    <img src="卡牌/${imgName}.png" onerror="this.style.display='none'">
+                    <img decoding="async" src="卡牌/${imgName}.webp" onerror="this.style.display='none'">
                     ${n > 1 ? `<div class="deck-count-tag">x${n}</div>` : ''}
                 `;
                 // 绑定 tooltip 事件

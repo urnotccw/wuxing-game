@@ -227,8 +227,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="星河符阵">
     <link rel="apple-touch-icon" href="五行生克图.png">
-    <link rel="stylesheet" href="mobile.css?v=20260918-fullscreen">
-    <script src="mobile.js?v=20260918-fullscreen" defer></script>
+    <link rel="stylesheet" href="mobile.css?v=20260918-performance">
+    <script src="mobile.js?v=20260918-performance" defer></script>
+    <script src="performance.js?v=20260918-performance"></script>
 </head>
 <body data-page="bishuiyu">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
@@ -255,16 +256,16 @@
     </div>
 
     <div class="content">
-        <img class="star-image" src="bishuiyu/壁水貐 (2).png" alt="壁水貐" onerror="this.style.display='none'">
+        <img decoding="async" class="star-image" src="bishuiyu/壁水貐 (2).webp" alt="壁水貐" onerror="this.style.display='none'">
         <div class="star-name">壁水貐</div>
     </div>
 
     <script>
         // 15张卡牌池
         const allCards = [
-            '冰水.png', '虎爪金.png', '琥珀土.png', '火.png', '金.png',
-            '莲花木.png', '鹿木.png', '玫瑰火.png', '木.png', '山土.png',
-            '水.png', '土.png', '星星金.png', '羽毛火.png', '月亮水.png'
+            '冰水.webp', '虎爪金.webp', '琥珀土.webp', '火.webp', '金.webp',
+            '莲花木.webp', '鹿木.webp', '玫瑰火.webp', '木.webp', '山土.webp',
+            '水.webp', '土.webp', '星星金.webp', '羽毛火.webp', '月亮水.webp'
         ];
 
         function shuffle(arr) {
@@ -284,7 +285,7 @@
             cards.forEach(name => {
                 const el = document.createElement('div');
                 el.className = 'hand-card';
-                el.innerHTML = `<img src="卡牌/${name}" alt="${name}">`;
+                el.innerHTML = `<img decoding="async" src="卡牌/${name}" alt="${name}">`;
                 handCardsEl.appendChild(el);
             });
         }

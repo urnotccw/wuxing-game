@@ -232,3 +232,27 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
 [data-page="battle"].short-landscape .player-stats .info-label { font-size: 0; }
 [data-page="battle"].short-landscape .player-stats .info-block:nth-child(1) .info-label::after { content: '生命'; font-size: 11px; }
 [data-page="battle"].short-landscape .player-stats .info-block:nth-child(2) .info-label::after { content: '护盾'; font-size: 11px; }
+
+/* Keep status colors/icons while avoiding continuous shadow repaints on phones. */
+.light-effects .formation-slot:is(.frozen, .sealed, .wood-marked, .slot-support-target),
+.light-effects .hand-card:is(.hint-sheng, .hint-ke, .rat-glow),
+.light-effects .rat-mark,
+.light-effects .star-pic {
+    animation: none !important;
+}
+.light-effects .water-shield-ring:not(.fade-out),
+.light-effects .kang-jin-long-shield-aura:not(.broken),
+.light-effects .fire-charge-ring,
+.light-effects .jiao-mu-jiao-aura,
+.light-effects .dou-mu-xie-wood-aura,
+.light-effects .vine-aura-ring {
+    animation: none !important;
+    filter: none;
+}
+/* Opaque dark panels avoid re-blurring the animated scene behind them. */
+.light-effects :is(.nav-btn, .guide-overlay, .atlas-overlay, .deck-overlay, .reward-overlay, .mobile-dialog) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+.light-effects .beast { transition-property: transform, opacity; }
+.light-effects .star-pic { box-shadow: 0 0 8px rgba(180, 210, 255, .24); }

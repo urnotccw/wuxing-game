@@ -63,8 +63,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="星河符阵">
     <link rel="apple-touch-icon" href="五行生克图.png">
-    <link rel="stylesheet" href="mobile.css?v=20260918-fullscreen">
-    <script src="mobile.js?v=20260918-fullscreen" defer></script>
+    <link rel="stylesheet" href="mobile.css?v=20260918-performance">
+    <script src="mobile.js?v=20260918-performance" defer></script>
+    <script src="performance.js?v=20260918-performance"></script>
 </head>
 <body data-page="index">
     <canvas id="canvas"></canvas>
@@ -81,7 +82,7 @@
         let W, H, dpr;
 
         function resize() {
-            dpr = devicePixelRatio;
+            dpr = window.WuxingPerformance.dpr;
             W = canvas.width = window.innerWidth * dpr;
             H = canvas.height = window.innerHeight * dpr;
             canvas.style.width = window.innerWidth + 'px';
@@ -121,9 +122,10 @@
         }
 
         // 球面粒子
-        const TOTAL_PARTICLES = 2000;
+        const TOTAL_PARTICLES = window.WuxingPerformance.particles(2000, 600);
         const particles = [];
-        const RING_COUNT = 8;
+        const RING_COUNT = window.WuxingPerformance.light ? 5 : 8;
+        const sorted = [];
 
         class Particle {
             constructor() {
@@ -162,6 +164,7 @@
                 p.theta = p.baseTheta + t * p.flowSpeed + noiseVal * 0.3;
                 p.r = p.radius + noiseVal * 3;
                 p.alpha = 0.3 + (noiseVal + 1) * 0.35;
+                p.depth = Math.cos(p.phi);
             }
         }
 
@@ -181,17 +184,14 @@
             ctx.fill();
 
             // 粒子
-            const sorted = [...particles].sort((a, b) => {
-                const za = Math.cos(a.phi);
-                const zb = Math.cos(b.phi);
-                return za - zb;
-            });
+            if (!sorted.length) sorted.push(...particles);
+            sorted.sort((a, b) => a.depth - b.depth);
 
             for (const p of sorted) {
                 if (p.alpha < 0.05) continue;
                 const x = cx + Math.sin(p.phi) * Math.cos(p.theta) * p.r;
                 const y = cy + Math.sin(p.phi) * Math.sin(p.theta) * p.r;
-                const depth = Math.cos(p.phi);
+                const depth = p.depth;
                 const alpha = p.alpha * (0.3 + (depth + 1) * 0.35);
                 const size = p.size * (0.5 + (depth + 1) * 0.25);
 
@@ -208,7 +208,7 @@
                 const ringR = ORB_R * (0.45 + ri * 0.07);
                 const tiltX = Math.sin(t * 1.5 + ri * 0.7) * 0.3;
                 const tiltY = Math.cos(t * 1.2 + ri * 0.9) * 0.3;
-                const segments = 120;
+                const segments = window.WuxingPerformance.light ? 64 : 120;
                 const hue = ringColors[ri % ringColors.length];
                 const alpha = 0.04 + ri * 0.01;
 
@@ -238,12 +238,10 @@
             ctx.fill();
         }
 
-        function loop(time) {
-            updateParticles(time);
+        window.WuxingPerformance.animate((time, delta) => {
+            updateParticles(time, delta);
             render(time);
-            requestAnimationFrame(loop);
-        }
-        requestAnimationFrame(loop);
+        });
 
         // 点击粒子球后显示故事文字
         let storyRevealed = false;

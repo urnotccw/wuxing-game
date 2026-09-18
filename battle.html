@@ -3406,8 +3406,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="星河符阵">
     <link rel="apple-touch-icon" href="五行生克图.png">
-    <link rel="stylesheet" href="mobile.css?v=20260918-fullscreen">
-    <script src="mobile.js?v=20260918-fullscreen" defer></script>
+    <link rel="stylesheet" href="mobile.css?v=20260918-performance">
+    <script src="mobile.js?v=20260918-performance" defer></script>
+    <script src="performance.js?v=20260918-performance"></script>
 </head>
 <body data-page="battle">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
@@ -3480,7 +3481,7 @@
     <div class="main-area">
         <div class="player-area">
             <div class="player-title">玩家</div>
-            <img class="player-img" src="玩家.png" alt="玩家" onerror="this.style.display='none'">
+            <img decoding="async" class="player-img" src="玩家.webp" alt="玩家" onerror="this.style.display='none'">
             <div class="player-name">玩家</div>
             <div class="player-stats">
                 <div class="info-block" style="width:100%">
@@ -3502,7 +3503,7 @@
             </div>
             <button class="toggle-chart-inline" onclick="toggleElementChart()">☯ 五行关系</button>
             <div class="chart-inline-panel" id="chartInlinePanel">
-                <img class="chart-inline-img" src="五行生克图.png" alt="五行生克图">
+                <img decoding="async" class="chart-inline-img" src="五行生克图.webp" alt="五行生克图">
             </div>
         </div>
         <div class="battle-center">
@@ -3550,7 +3551,7 @@
                 <div class="bat-shadow b1" id="bat1" style="display:none;"></div>
                 <div class="bat-shadow b2" id="bat2" style="display:none;"></div>
                 <div class="bat-shadow b3" id="bat3" style="display:none;"></div>
-                <img class="enemy-img" id="enemyImg" src="" alt="">
+                <img decoding="async" class="enemy-img" id="enemyImg" src="" alt="">
                 <div class="water-curtain layer-0" id="waterCurtainOverlay"></div>
                 <div class="fire-curtain" id="fireCurtainOverlay"></div>
                 <div class="xing-ri-ma-sun-ring" id="xingRiMaSunRing"></div>
@@ -3708,7 +3709,7 @@
         function getCardImg(cardName) {
             // 去掉升级后缀 +1 来获取图片
             const cleanName = cardName.replace('+1', '');
-            return '卡牌/' + cleanName + '.png';
+            return '卡牌/' + cleanName + '.webp';
         }
 
         // 元素中文名
@@ -3760,7 +3761,7 @@
                         '上限：护盾最多12点',
                         '破碎：护盾首次归零后，不再回流'
                     ],
-                    image: 'bishuiyu/壁水貐 (2).png', beastName: '玄武',
+                    image: 'bishuiyu/壁水貐 (2).webp', beastName: '玄武',
                     shieldMax: 12,
                     wallBroken: false
                 },
@@ -3773,7 +3774,7 @@
                         '水克火：减少1层蓄火',
                         '三克阵：熔火冲撞伤害减半'
                     ],
-                    image: '室火猪.png', beastName: '玄武',
+                    image: '室火猪.webp', beastName: '玄武',
                     fireCharge: 0, fireChargeMax: 3, chargeDamage: 22, chargeReduced: false
                 },
                 {
@@ -3785,7 +3786,7 @@
                         '未打出：该牌被偷走，玩家受到2点伤害',
                         '归还：战斗结束后，被偷牌归还'
                     ],
-                    image: '虚日鼠.png', beastName: '玄武'
+                    image: '虚日鼠.webp', beastName: '玄武'
                 },
                 {
                     id: 'nvtu fu', name: '女土蝠', maxHp: 58, hp: 58, shield: 0, attack: 6,
@@ -3796,7 +3797,7 @@
                         '辅助区：蒙尘牌不受影响',
                         '结束：回合结束后清除蒙尘'
                     ],
-                    image: '女土蝠.png', beastName: '玄武'
+                    image: '女土蝠.webp', beastName: '玄武'
                 },
                 {
                     id: 'doumuxie', name: '斗木獬', maxHp: 135, hp: 135, shield: 0, attack: 7,
@@ -3808,7 +3809,7 @@
                         '护身：2层清正可使断罪减半',
                         '狂木：半血后断罪每2回合触发'
                     ],
-                    image: '斗木獬.png', beastName: '玄武',
+                    image: '斗木獬.webp', beastName: '玄武',
                     judgementCounter: 0,
                     enraged: false
                 }
@@ -3824,7 +3825,7 @@
                         '相克：标记列相克时，敌人+6护盾',
                         '回合结束：未触发相生，敌人+5护盾'
                     ],
-                    image: '角木蛟.png', beastName: '青龙'
+                    image: '角木蛟.webp', beastName: '青龙'
                 },
                 {
                     id: 'kangJinLong', name: '亢金龙', maxHp: 65, hp: 65, shield: 14, attack: 6,
@@ -3836,7 +3837,7 @@
                         '破鳞：护盾归零后，下次攻击降低',
                         '再铸：HP低于50%时，获得10护盾'
                     ],
-                    image: '亢金龙.png', beastName: '青龙',
+                    image: '亢金龙.webp', beastName: '青龙',
                     recastScaleTriggered: false
                 },
                 {
@@ -3849,7 +3850,7 @@
                         '破幻：额外造成8点伤害',
                         '大结算：不受幻身减伤影响'
                     ],
-                    image: '心月狐.png', beastName: '青龙',
+                    image: '心月狐.webp', beastName: '青龙',
                     illusionStacks: 3
                 },
                 {
@@ -3862,7 +3863,7 @@
                         '水牌：削弱燃尾，攻击变为10点',
                         '水克火：直接熄灭燃尾'
                     ],
-                    image: '尾火虎.png', beastName: '青龙',
+                    image: '尾火虎.webp', beastName: '青龙',
                     burningTail: false,
                     burningTailWeakened: false
                 },
@@ -3877,7 +3878,7 @@
                         '土克水：削减8护盾，无盾时+5伤害',
                         '三生阵：额外造成15伤害'
                     ],
-                    image: '箕水豹.png', beastName: '青龙',
+                    image: '箕水豹.webp', beastName: '青龙',
                     rushTriggered: false,
                     rushing: false
                 }
@@ -3894,7 +3895,7 @@
                         '木生火：火伤害额外+8',
                         '回生：未造成火伤时，藤甲恢复'
                     ],
-                    image: '井木犴.png', beastName: '朱雀',
+                    image: '井木犴.webp', beastName: '朱雀',
                     vineArmor: 2
                 },
                 {
@@ -3907,7 +3908,7 @@
                         '火牌：阻止本回合金铃增加',
                         '火克金：清空金铃，额外8伤害'
                     ],
-                    image: '鬼金羊.png', beastName: '朱雀',
+                    image: '鬼金羊.webp', beastName: '朱雀',
                     bellStacks: 0,
                     bellMaxStacks: 3,
                     nextAttackReduction: 0
@@ -3916,7 +3917,7 @@
                     id: 'liuTuZhang', name: '柳土獐', maxHp: 62, hp: 62, shield: 20, attack: 6,
                     mechanicType: 'willow_earth',
                     description: '开场自带25护盾\n柳土成墙：有盾时受到攻击\n反弹玩家3伤害\n回合末护盾<15→自身+8盾\n木克土小结算→额外击碎5护盾',
-                    image: '柳土獐.png', beastName: '朱雀'
+                    image: '柳土獐.webp', beastName: '朱雀'
                 },
                 {
                     id: 'xingRiMa', name: '星日马', maxHp: 78, hp: 78, shield: 0, attack: 5,
@@ -3929,7 +3930,7 @@
                         '破驰：疾驰为0时，额外4伤害',
                         '冲锋：3层时攻击变为13点'
                     ],
-                    image: '星日马.png', beastName: '朱雀',
+                    image: '星日马.webp', beastName: '朱雀',
                     gallopStacks: 0,
                     gallopMaxStacks: 3
                 },
@@ -3937,7 +3938,7 @@
                     id: 'zhangYueLu', name: '张月鹿', maxHp: 70, hp: 70, shield: 0, attack: 7,
                     mechanicType: 'moon_deer',
                     description: '月鹿灵跃：30%概率闪避攻击\n闪避后反击玩家5伤害\n金克木小结算→自身额外受5伤害\n相生小结算→玩家回复3HP',
-                    image: '张月鹿.png', beastName: '朱雀'
+                    image: '张月鹿.webp', beastName: '朱雀'
                 },
                 {
                     id: 'yiHuoShe', name: '翼火蛇', maxHp: 90, hp: 90, shield: 0, attack: 6,
@@ -3950,7 +3951,7 @@
                         '水克火：清除2层灼烧，熄灭火翼',
                         '双火：火伤+3，但玩家+1层灼烧'
                     ],
-                    image: '翼火蛇.png', beastName: '朱雀',
+                    image: '翼火蛇.webp', beastName: '朱雀',
                     turnCount: 0,
                     fireWing: false
                 },
@@ -3966,7 +3967,7 @@
                         '土克水：削弱2层水幕',
                         '燃阵：水幕为0时，火伤害+12'
                     ],
-                    image: '轸水蚓.png', beastName: '朱雀',
+                    image: '轸水蚓.webp', beastName: '朱雀',
                     waterCurtain: 2,
                     waterCurtainMax: 3,
                     turnCount: 0,
@@ -3985,7 +3986,7 @@
                         '追击：3层时造成12点伤害',
                         '反扑：未造成伤害时，下次攻击+2'
                     ],
-                    image: '奎木狼.png', beastName: '白虎',
+                    image: '奎木狼.webp', beastName: '白虎',
                     huntMarks: 0,
                     huntMarkMax: 3,
                     nextAttackBonus: 0
@@ -4001,7 +4002,7 @@
                         '火克金：8破盾伤害，下次攻击-2',
                         '断链：护盾归零时，额外8伤害'
                     ],
-                    image: '娄金狗.png', beastName: '白虎',
+                    image: '娄金狗.webp', beastName: '白虎',
                     chainBroken: false,
                     nextAttackBonus: 0,
                     nextAttackReduction: 0
@@ -4010,7 +4011,7 @@
                     id: 'weiTuZhi', name: '胃土雉', maxHp: 74, hp: 74, shield: 0, attack: 6,
                     mechanicType: 'placeholder',
                     description: '机制待实现',
-                    image: '胃土雉.png', beastName: '白虎'
+                    image: '胃土雉.webp', beastName: '白虎'
                 },
                 {
                     id: 'maoRiJi', name: '昴日鸡', maxHp: 70, hp: 70, shield: 0, attack: 7,
@@ -4023,7 +4024,7 @@
                         '相克：额外6伤害，下次攻击-2',
                         '三克阵：额外再造成6伤害'
                     ],
-                    image: '昴日鸡.png', beastName: '白虎',
+                    image: '昴日鸡.webp', beastName: '白虎',
                     nextAttackBonus: 0,
                     nextAttackReduction: 0
                 },
@@ -4031,7 +4032,7 @@
                     id: 'biYueWu', name: '毕月乌', maxHp: 74, hp: 74, shield: 0, attack: 6,
                     mechanicType: 'placeholder',
                     description: '机制待实现',
-                    image: '毕月乌.png', beastName: '白虎'
+                    image: '毕月乌.webp', beastName: '白虎'
                 },
                 {
                     id: 'ziHuoHou', name: '觜火猴', maxHp: 100, hp: 100, shield: 0, attack: 7,
@@ -4043,7 +4044,7 @@
                         '水克火：清空记招，额外8伤害',
                         '乱跳：连续2次看穿后，攻击+3'
                     ],
-                    image: '觜火猴.png', beastName: '白虎',
+                    image: '觜火猴.webp', beastName: '白虎',
                     rememberedElements: [],
                     counterStreak: 0,
                     nextAttackBonus: 0,
@@ -4060,7 +4061,7 @@
                         '破影：水影清空时，额外15伤害',
                         '回潮：每2个敌人回合+1层'
                     ],
-                    image: '参水猿.png', beastName: '白虎',
+                    image: '参水猿.webp', beastName: '白虎',
                     waterShadow: 2,
                     waterShadowMax: 3,
                     turnCount: 0,
@@ -7821,7 +7822,7 @@
             gameState.rewardOptions.forEach((card, idx) => {
                 const el = document.createElement('div');
                 el.className = 'reward-card';
-                el.innerHTML = `<img src="${getCardImg(card.name)}" alt="${card.name}" onerror="this.style.display='none'"><div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:12px;color:rgba(255,255,255,0.7);text-shadow:0 1px 3px rgba(0,0,0,0.8);pointer-events:none;z-index:2;">${card.name}</div>`;
+                el.innerHTML = `<img decoding="async" src="${getCardImg(card.name)}" alt="${card.name}" onerror="this.style.display='none'"><div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:12px;color:rgba(255,255,255,0.7);text-shadow:0 1px 3px rgba(0,0,0,0.8);pointer-events:none;z-index:2;">${card.name}</div>`;
                 el.addEventListener('click', () => selectReward(idx));
                 el.addEventListener('mouseenter', (e) => showCardTooltip(card.name, e));
                 el.addEventListener('mousemove', moveCardTooltip);
@@ -7913,7 +7914,7 @@
                 keys.sort().forEach(name => {
                     const count = grouped[name];
                     html += `<div class="deck-card-item" onmouseenter="showDeckCardTooltip(event,'${name}','${e}',${count})" onmousemove="moveCardTooltip(event)" onmouseleave="hideCardTooltip()">
-                        <img src="${getCardImg(name)}" alt="${name}" onerror="this.style.display='none'">
+                        <img decoding="async" src="${getCardImg(name)}" alt="${name}" onerror="this.style.display='none'">
                         ${count > 1 ? `<div class="deck-card-count">×${count}</div>` : ''}
                         <div class="deck-card-name">${name}</div>
                     </div>`;
@@ -8270,9 +8271,9 @@
                     }
                     descText += `<br>${rushText}`;
                 }
-                enemyDesc.innerHTML = descText;
+                if (enemyDesc.innerHTML !== descText) enemyDesc.innerHTML = descText;
                 if (gameState.enemy.image) {
-                    enemyImg.src = gameState.enemy.image;
+                    if (enemyImg.getAttribute('src') !== gameState.enemy.image) enemyImg.src = gameState.enemy.image;
                     enemyImg.style.display = '';
                 } else {
                     enemyImg.style.display = 'none';
@@ -8600,7 +8601,7 @@
                     const div = document.createElement('div');
                     div.className = 'deck-card-item';
                     div.innerHTML = `
-                        <img src="${getCardImg(name)}" alt="${name}" onerror="this.style.display='none'">
+                        <img decoding="async" src="${getCardImg(name)}" alt="${name}" onerror="this.style.display='none'">
                         ${count > 1 ? `<div class="deck-card-count">×${count}</div>` : ''}
                         <div class="deck-card-name">${name}</div>
                     `;
@@ -8613,6 +8614,13 @@
         }
 
         function renderFormation() {
+            // Preserve image nodes and event handlers when only HP/hand selection changes.
+            const signature = JSON.stringify([gameState.formation, gameState.selectedHandIdx !== -1,
+                gameState.hintColumn, gameState.woodMarkedColumn, gameState.enemy?.mechanicType]);
+            const cached = renderFormation.cache;
+            if (cached && cached.signature === signature &&
+                cached.slots.every((slot, i) => slot === gameState.formation[i]) && formationGrid.children.length === 6) return;
+            renderFormation.cache = { signature, slots: gameState.formation.slice() };
             formationGrid.innerHTML = '';
             // 顺序：上排0-2，下排3-5
             for (let i = 0; i < 6; i++) {
@@ -9099,6 +9107,7 @@
         let _woodLeafInterval = null;
         function startWoodLeafParticles() {
             stopWoodLeafParticles();
+            if (window.WuxingPerformance.light) return;
             _woodLeafInterval = setInterval(() => {
                 const wrapper = document.getElementById('enemyImgWrapper');
                 if (!wrapper || !gameState.enemy || gameState.enemy.mechanicType !== 'final_judgement') {
@@ -9359,7 +9368,7 @@
             const currentCount = container.querySelectorAll('.illusion-clone').length;
             if (currentCount === stacks) return;
             container.innerHTML = '';
-            const imgSrc = gameState.enemy.image || '心月狐.png';
+            const imgSrc = gameState.enemy.image || '心月狐.webp';
             for (let i = 0; i < stacks; i++) {
                 const clone = document.createElement('img');
                 clone.className = 'illusion-clone illusion-clone-' + (i + 1);

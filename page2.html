@@ -557,8 +557,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="星河符阵">
     <link rel="apple-touch-icon" href="五行生克图.png">
-    <link rel="stylesheet" href="mobile.css?v=20260918-fullscreen">
-    <script src="mobile.js?v=20260918-fullscreen" defer></script>
+    <link rel="stylesheet" href="mobile.css?v=20260918-performance">
+    <script src="mobile.js?v=20260918-performance" defer></script>
+    <script src="performance.js?v=20260918-performance"></script>
 </head>
 <body data-page="page2">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
@@ -573,14 +574,14 @@
         <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50" oninput="onVolumeChange(this.value)">
         <span class="volume-label" id="volumeLabel">50%</span>
     </div>
-    <img class="beast beast-top" src="玄武.png" alt="玄武" onclick="goToBeastPage('玄武')">
-    <img class="beast beast-bottom" src="朱雀.png" alt="朱雀" onclick="goToBeastPage('朱雀')">
-    <img class="beast beast-left" src="白虎.png" alt="白虎" onclick="goToBeastPage('白虎')">
-    <img class="beast beast-right" src="青龙.png" alt="青龙" onclick="goToBeastPage('青龙')">
+    <img decoding="async" class="beast beast-top" src="玄武.webp" alt="玄武" onclick="goToBeastPage('玄武')">
+    <img decoding="async" class="beast beast-bottom" src="朱雀.webp" alt="朱雀" onclick="goToBeastPage('朱雀')">
+    <img decoding="async" class="beast beast-left" src="白虎.webp" alt="白虎" onclick="goToBeastPage('白虎')">
+    <img decoding="async" class="beast beast-right" src="青龙.webp" alt="青龙" onclick="goToBeastPage('青龙')">
 
     <div class="nav-buttons">
         <div class="logo-wrap">
-            <img class="logo-img" src="logo.png" alt="Logo">
+            <img decoding="async" class="logo-img" src="logo.webp" alt="Logo">
         </div>
         <div class="btn-group">
             <button class="nav-btn" onclick="openGuide()">玩法介绍</button>
@@ -670,7 +671,7 @@
     <!-- 星宿详情弹窗 -->
     <div class="atlas-detail-overlay" id="atlasDetailOverlay" onclick="closeAtlasDetail(event)">
         <div class="atlas-detail-card" onclick="event.stopPropagation()">
-            <img class="atlas-detail-img" id="atlasDetailImg" src="" alt="">
+            <img decoding="async" class="atlas-detail-img" id="atlasDetailImg" src="" alt="">
             <div class="atlas-detail-name" id="atlasDetailName"></div>
             <div class="atlas-detail-info" id="atlasDetailInfo"></div>
             <div class="atlas-detail-desc" id="atlasDetailDesc"></div>
@@ -724,34 +725,34 @@
         // 星宿图鉴
         // ============================================================
         const STAR_ATLAS = [
-            { id:'jiaoMuJiao', name:'角木蛟', chapter:'青龙', order:1, element:'木', description:'青龙七宿之首，象征东方木气初生，蛟影盘旋于星河之间。', image:'角木蛟.png' },
-            { id:'kangJinLong', name:'亢金龙', chapter:'青龙', order:2, element:'金', description:'金鳞昂首，龙影凌空，象征锋芒与威严。', image:'亢金龙.png' },
-            { id:'diTuHe', name:'氐土貉', chapter:'青龙', order:3, element:'土', description:'伏于星壤之中，承载地脉之力。', image:'氐土貉.png' },
-            { id:'fangRiTu', name:'房日兔', chapter:'青龙', order:4, element:'日', description:'日光温润，灵兔穿行于星阵之间。', image:'房日兔.png' },
-            { id:'xinYueHu', name:'心月狐', chapter:'青龙', order:5, element:'月', description:'月影迷离，狐影重重，象征幻象与魅惑。', image:'心月狐.png' },
-            { id:'weiHuoHu', name:'尾火虎', chapter:'青龙', order:6, element:'火', description:'赤焰如尾，虎影奔袭，象征烈火与追击。', image:'尾火虎.png' },
-            { id:'jiShuiBao', name:'箕水豹', chapter:'青龙', order:7, element:'水', description:'水势奔涌，豹影潜行，象征流动与破浪。', image:'箕水豹.png' },
-            { id:'jingMuAn', name:'井木犴', chapter:'朱雀', order:1, element:'木', description:'星井涌木，犴影伏守，象征薪火初燃。', image:'井木犴.png' },
-            { id:'guiJinYang', name:'鬼金羊', chapter:'朱雀', order:2, element:'金', description:'金铃幽响，羊影穿雾，带有神秘的招魂气息。', image:'鬼金羊.png' },
-            { id:'liuTuZhang', name:'柳土獐', chapter:'朱雀', order:3, element:'土', description:'灰烬入土，獐影轻跃，象征沉淀与滋养。', image:'柳土獐.png' },
-            { id:'xingRiMa', name:'星日马', chapter:'朱雀', order:4, element:'日', description:'日光疾驰，马踏星火，象征速度与炽烈。', image:'星日马.png' },
-            { id:'zhangYueLu', name:'张月鹿', chapter:'朱雀', order:5, element:'月', description:'月鹿踏辉，清光流转，象征疗愈与宁静。', image:'张月鹿.png' },
-            { id:'yiHuoShe', name:'翼火蛇', chapter:'朱雀', order:6, element:'火', description:'赤翼舒展，火蛇盘旋，象征灼烧与爆发。', image:'翼火蛇.png' },
-            { id:'zhenShuiYin', name:'轸水蚓', chapter:'朱雀', order:7, element:'水', description:'水幕潜行，蚓影隐没，象征潮湿与压制。', image:'轸水蚓.png' },
-            { id:'kuiMuLang', name:'奎木狼', chapter:'白虎', order:1, element:'木', description:'狼影潜行于白虎星雾中，象征猎杀的开端。', image:'奎木狼.png' },
-            { id:'louJinGou', name:'娄金狗', chapter:'白虎', order:2, element:'金', description:'金链护门，犬目如炬，象征守护与警觉。', image:'娄金狗.png' },
-            { id:'weiTuZhi', name:'胃土雉', chapter:'白虎', order:3, element:'土', description:'星砂沉积，土雉藏锋，象征储备与蓄势。', image:'胃土雉.png' },
-            { id:'maoRiJi', name:'昴日鸡', chapter:'白虎', order:4, element:'日', description:'晨光破晓，金鸡啼鸣，象征觉醒与照耀。', image:'昴日鸡.png' },
-            { id:'biYueWu', name:'毕月乌', chapter:'白虎', order:5, element:'月', description:'黑羽映月，乌瞳窥影，象征预知与冷光。', image:'毕月乌.png' },
-            { id:'ziHuoHou', name:'觜火猴', chapter:'白虎', order:6, element:'火', description:'火猴狡黠，赤焰跳跃，象征变化与戏法。', image:'觜火猴.png' },
-            { id:'shenShuiYuan', name:'参水猿', chapter:'白虎', order:7, element:'水', description:'水影重重，猿影潜伏，象征分身与终局试炼。', image:'参水猿.png' },
-            { id:'biShuiYu', name:'壁水貐', chapter:'玄武', order:1, element:'水', description:'水壁环身，貐影静伏，象征防护与初始试炼。', image:'玄武/壁水貐.png' },
-            { id:'shiHuoZhu', name:'室火猪', chapter:'玄武', order:2, element:'火', description:'火室低鸣，猪影沉重，象征蓄火与冲撞。', image:'室火猪.png' },
-            { id:'weiYueYan', name:'危月燕', chapter:'玄武', order:3, element:'月', description:'月燕掠空，星光微颤，象征观星与预兆。', image:'危月燕.png' },
-            { id:'xuRiShu', name:'虚日鼠', chapter:'玄武', order:4, element:'日', description:'鼠影穿梭于虚日之下，象征偷袭与机敏。', image:'虚日鼠.png' },
-            { id:'nvTuFu', name:'女土蝠', chapter:'玄武', order:5, element:'土', description:'土雾倒悬，蝠影低飞，象征蒙尘与压制。', image:'女土蝠.png' },
-            { id:'niuJinNiu', name:'牛金牛', chapter:'玄武', order:6, element:'金', description:'金角沉稳，牛影立于星砂之中，象征铸造与坚固。', image:'牛金牛.png' },
-            { id:'douMuXie', name:'斗木獬', chapter:'玄武', order:7, element:'木', description:'獬角裁决，木气肃正，象征审判与终局守护。', image:'斗木獬.png' }
+            { id:'jiaoMuJiao', name:'角木蛟', chapter:'青龙', order:1, element:'木', description:'青龙七宿之首，象征东方木气初生，蛟影盘旋于星河之间。', image:'角木蛟.webp' },
+            { id:'kangJinLong', name:'亢金龙', chapter:'青龙', order:2, element:'金', description:'金鳞昂首，龙影凌空，象征锋芒与威严。', image:'亢金龙.webp' },
+            { id:'diTuHe', name:'氐土貉', chapter:'青龙', order:3, element:'土', description:'伏于星壤之中，承载地脉之力。', image:'氐土貉.webp' },
+            { id:'fangRiTu', name:'房日兔', chapter:'青龙', order:4, element:'日', description:'日光温润，灵兔穿行于星阵之间。', image:'房日兔.webp' },
+            { id:'xinYueHu', name:'心月狐', chapter:'青龙', order:5, element:'月', description:'月影迷离，狐影重重，象征幻象与魅惑。', image:'心月狐.webp' },
+            { id:'weiHuoHu', name:'尾火虎', chapter:'青龙', order:6, element:'火', description:'赤焰如尾，虎影奔袭，象征烈火与追击。', image:'尾火虎.webp' },
+            { id:'jiShuiBao', name:'箕水豹', chapter:'青龙', order:7, element:'水', description:'水势奔涌，豹影潜行，象征流动与破浪。', image:'箕水豹.webp' },
+            { id:'jingMuAn', name:'井木犴', chapter:'朱雀', order:1, element:'木', description:'星井涌木，犴影伏守，象征薪火初燃。', image:'井木犴.webp' },
+            { id:'guiJinYang', name:'鬼金羊', chapter:'朱雀', order:2, element:'金', description:'金铃幽响，羊影穿雾，带有神秘的招魂气息。', image:'鬼金羊.webp' },
+            { id:'liuTuZhang', name:'柳土獐', chapter:'朱雀', order:3, element:'土', description:'灰烬入土，獐影轻跃，象征沉淀与滋养。', image:'柳土獐.webp' },
+            { id:'xingRiMa', name:'星日马', chapter:'朱雀', order:4, element:'日', description:'日光疾驰，马踏星火，象征速度与炽烈。', image:'星日马.webp' },
+            { id:'zhangYueLu', name:'张月鹿', chapter:'朱雀', order:5, element:'月', description:'月鹿踏辉，清光流转，象征疗愈与宁静。', image:'张月鹿.webp' },
+            { id:'yiHuoShe', name:'翼火蛇', chapter:'朱雀', order:6, element:'火', description:'赤翼舒展，火蛇盘旋，象征灼烧与爆发。', image:'翼火蛇.webp' },
+            { id:'zhenShuiYin', name:'轸水蚓', chapter:'朱雀', order:7, element:'水', description:'水幕潜行，蚓影隐没，象征潮湿与压制。', image:'轸水蚓.webp' },
+            { id:'kuiMuLang', name:'奎木狼', chapter:'白虎', order:1, element:'木', description:'狼影潜行于白虎星雾中，象征猎杀的开端。', image:'奎木狼.webp' },
+            { id:'louJinGou', name:'娄金狗', chapter:'白虎', order:2, element:'金', description:'金链护门，犬目如炬，象征守护与警觉。', image:'娄金狗.webp' },
+            { id:'weiTuZhi', name:'胃土雉', chapter:'白虎', order:3, element:'土', description:'星砂沉积，土雉藏锋，象征储备与蓄势。', image:'胃土雉.webp' },
+            { id:'maoRiJi', name:'昴日鸡', chapter:'白虎', order:4, element:'日', description:'晨光破晓，金鸡啼鸣，象征觉醒与照耀。', image:'昴日鸡.webp' },
+            { id:'biYueWu', name:'毕月乌', chapter:'白虎', order:5, element:'月', description:'黑羽映月，乌瞳窥影，象征预知与冷光。', image:'毕月乌.webp' },
+            { id:'ziHuoHou', name:'觜火猴', chapter:'白虎', order:6, element:'火', description:'火猴狡黠，赤焰跳跃，象征变化与戏法。', image:'觜火猴.webp' },
+            { id:'shenShuiYuan', name:'参水猿', chapter:'白虎', order:7, element:'水', description:'水影重重，猿影潜伏，象征分身与终局试炼。', image:'参水猿.webp' },
+            { id:'biShuiYu', name:'壁水貐', chapter:'玄武', order:1, element:'水', description:'水壁环身，貐影静伏，象征防护与初始试炼。', image:'玄武/壁水貐.webp' },
+            { id:'shiHuoZhu', name:'室火猪', chapter:'玄武', order:2, element:'火', description:'火室低鸣，猪影沉重，象征蓄火与冲撞。', image:'室火猪.webp' },
+            { id:'weiYueYan', name:'危月燕', chapter:'玄武', order:3, element:'月', description:'月燕掠空，星光微颤，象征观星与预兆。', image:'危月燕.webp' },
+            { id:'xuRiShu', name:'虚日鼠', chapter:'玄武', order:4, element:'日', description:'鼠影穿梭于虚日之下，象征偷袭与机敏。', image:'虚日鼠.webp' },
+            { id:'nvTuFu', name:'女土蝠', chapter:'玄武', order:5, element:'土', description:'土雾倒悬，蝠影低飞，象征蒙尘与压制。', image:'女土蝠.webp' },
+            { id:'niuJinNiu', name:'牛金牛', chapter:'玄武', order:6, element:'金', description:'金角沉稳，牛影立于星砂之中，象征铸造与坚固。', image:'牛金牛.webp' },
+            { id:'douMuXie', name:'斗木獬', chapter:'玄武', order:7, element:'木', description:'獬角裁决，木气肃正，象征审判与终局守护。', image:'斗木獬.webp' }
         ];
 
         const ATLAS_CHAPTERS = ['青龙','朱雀','白虎','玄武'];
@@ -790,7 +791,7 @@
                 const descText = isCleared ? s.description : '？';
                 return `
                 <div class="atlas-card${grayClass}" onclick="openAtlasDetail('${s.id}')">
-                    <img class="atlas-card-img" src="${s.image}" alt="${s.name}" onerror="this.style.display='none'">
+                    <img decoding="async" class="atlas-card-img" src="${s.image}" alt="${s.name}" onerror="this.style.display='none'">
                     <div class="atlas-card-name">${s.name}</div>
                     <div class="atlas-card-elem">${elemText}</div>
                 </div>
@@ -839,18 +840,18 @@
         let W, H, dpr;
 
         function resize() {
-            dpr = devicePixelRatio;
+            dpr = window.WuxingPerformance.dpr;
             W = canvas.width = window.innerWidth * dpr;
             H = canvas.height = window.innerHeight * dpr;
             canvas.style.width = window.innerWidth + 'px';
             canvas.style.height = window.innerHeight + 'px';
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
-        window.addEventListener('resize', () => { resize(); initAll(); });
+        window.addEventListener('resize', resize);
         resize();
 
         const SPHERE_R = 90;
-        const TOTAL_PARTICLES = 15000;
+        const TOTAL_PARTICLES = window.WuxingPerformance.particles(15000, 1500);
         const STREAM_COUNT = 12;
 
         const CX = () => window.innerWidth / 2;
@@ -928,6 +929,7 @@
         let particles = [];
         let streams = [];
         let sortedByDepth = new Int32Array(TOTAL_PARTICLES);
+        const depthArr = new Float32Array(TOTAL_PARTICLES);
 
         function initAll() {
             streams = [];
@@ -943,9 +945,8 @@
         }
         initAll();
 
-        function updateParticles(time) {
+        function updateParticles(time, delta = 1) {
             const t = time * 0.0002;
-            const depthArr = new Float32Array(TOTAL_PARTICLES);
             const camAngleY = 0.45;
             const camAngleX = 0.25;
             const cosY = Math.cos(camAngleY), sinY = Math.sin(camAngleY);
@@ -956,7 +957,7 @@
             for (let i = 0; i < TOTAL_PARTICLES; i++) {
                 const p = particles[i];
                 const s = streams[p.streamId];
-                p.age += s.speed;
+                p.age += s.speed * delta;
 
                 const nScale = 0.0015;
                 const tFlow = p.age * 0.0004;
@@ -1003,9 +1004,9 @@
                 p.targetAlpha = 0.04 + streamDensity * 0.45;
 
                 if (p.alpha < p.targetAlpha) {
-                    p.alpha += (p.targetAlpha - p.alpha) * 0.06;
+                    p.alpha += (p.targetAlpha - p.alpha) * (1 - Math.pow(0.94, delta));
                 } else {
-                    p.alpha += (p.targetAlpha - p.alpha) * 0.03;
+                    p.alpha += (p.targetAlpha - p.alpha) * (1 - Math.pow(0.97, delta));
                 }
 
                 if (p.age > 4000) {
@@ -1029,7 +1030,15 @@
             sortedByDepth.sort((a, b) => depthArr[a] - depthArr[b]);
         }
 
+        const beastBounds = new Map();
+        const beastElements = [...document.querySelectorAll('.beast-top, .beast-bottom, .beast-left, .beast-right')];
         function renderParticles(time) {
+            beastBounds.clear();
+            for (const el of beastElements) {
+                if (!el.classList.contains('show')) continue;
+                const key = ['beast-top', 'beast-bottom', 'beast-left', 'beast-right'].find(c => el.classList.contains(c));
+                beastBounds.set('.' + key, el.getBoundingClientRect());
+            }
             const cx = CX(), cy = CY();
 
             ctx.clearRect(0, 0, W, H);
@@ -1095,14 +1104,13 @@
             ];
 
             beasts.forEach((b, bi) => {
-                const el = document.querySelector(b.el);
-                if (!el || !el.classList.contains('show')) return;
-                const rect = el.getBoundingClientRect();
+                const rect = beastBounds.get(b.el);
+                if (!rect) return;
                 const bCx = rect.left + rect.width / 2;
                 const bCy = rect.top + rect.height / 2;
                 const glowR = beastR + gap;
 
-                const particleCount = 80;
+                const particleCount = window.WuxingPerformance.light ? 20 : 80;
                 for (let i = 0; i < particleCount; i++) {
                     const angle = (i / particleCount) * Math.PI * 2 + t * (bi % 2 === 0 ? 1 : -1);
                     const rad = glowR + Math.sin(i * 7 + t * 3) * 8;
@@ -1135,9 +1143,8 @@
             const arrowGap = 40; // gap from image edge
 
             const getEdgePoint = (selector, angleOffset) => {
-                const el = document.querySelector(selector);
-                if (!el || !el.classList.contains('show')) return null;
-                const r = el.getBoundingClientRect();
+                const r = beastBounds.get(selector);
+                if (!r) return null;
                 const cx = r.left + r.width / 2;
                 const cy = r.top + r.height / 2;
                 const rad = beastR + arrowGap;
@@ -1224,12 +1231,10 @@
             ctx.setLineDash([]);
         }
 
-        function loop(time) {
-            updateParticles(time);
+        window.WuxingPerformance.animate((time, delta) => {
+            updateParticles(time, delta);
             renderParticles(time);
-            requestAnimationFrame(loop);
-        }
-        requestAnimationFrame(loop);
+        });
 
         // Show beasts with staggered animation
         setTimeout(() => {
