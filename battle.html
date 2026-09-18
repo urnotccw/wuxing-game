@@ -3406,9 +3406,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="星河符阵">
     <link rel="apple-touch-icon" href="五行生克图.png">
-    <link rel="stylesheet" href="mobile.css?v=20260918-performance">
+    <link rel="stylesheet" href="mobile.css?v=20260918-drag">
     <script src="mobile.js?v=20260918-performance" defer></script>
     <script src="performance.js?v=20260918-performance"></script>
+    <script defer src="mobile-drag.js?v=20260918-drag"></script>
 </head>
 <body data-page="battle">
     <audio id="bgMusic" src="Moonlit Jade Drift.mp3" loop preload="auto"></audio>
@@ -4934,6 +4935,7 @@
 
         function placeCardToGrid(slotIdx) {
             const slot = gameState.formation[slotIdx];
+            if (!slot) return;
             if (slot.card) {
                 showStatus('该格子已有卡牌');
                 return;
@@ -4958,10 +4960,25 @@
             placeToSlot(slotIdx, card);
         }
 
+        window.WuxingBattleInput = {
+            canDrag(index) {
+                const card = gameState.hand[index];
+                return !!card && !card.used && gameState.placedThisRound < 2 &&
+                    gameState.player.hp > 0 && gameState.enemy?.hp > 0;
+            },
+            canDrop(handIdx, slotIdx) {
+                const slot = gameState.formation[slotIdx];
+                return this.canDrag(handIdx) && !!slot && !slot.card && !slot.sealed;
+            },
+            drop: (handIdx, slotIdx) => dragPlaceCard(handIdx, slotIdx)
+        };
+
         function dragPlaceCard(handIdx, slotIdx) {
             const card = gameState.hand[handIdx];
             if (!card || card.used) return;
             const slot = gameState.formation[slotIdx];
+            if (!slot) return;
+            if (slot.sealed) { showStatus("🔒 该格被封印，无法放置"); return; }
             if (slot.card) {
                 showStatus('该格子已有卡牌');
                 return;

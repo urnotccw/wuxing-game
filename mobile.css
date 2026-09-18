@@ -152,17 +152,27 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
     .upgrade-hint { margin-bottom: 8px; }
 
     /* Battle: compact toolbar, three flexible columns, full-width hand dock. */
-    [data-page="battle"] { --hand-height: clamp(96px, calc(var(--screen-height) * .32), 158px); padding: calc(56px + var(--safe-top)) calc(12px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(12px + var(--safe-left)); }
+    [data-page="battle"] {
+        --card-height: clamp(48px, calc((var(--screen-height) - var(--safe-top) - var(--safe-bottom) - 104px) / 3), 116px);
+        --card-width: calc(var(--card-height) * 2 / 3);
+        --hand-height: calc(var(--card-height) + 28px);
+        --battle-height: calc(var(--screen-height) - 64px - var(--hand-height) - var(--safe-top) - var(--safe-bottom));
+        --side-width: clamp(92px, 20vw, 190px);
+        padding: calc(56px + var(--safe-top)) calc(12px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(12px + var(--safe-left));
+    }
     [data-page="battle"] .mobile-only { display: inline-flex; align-items: center; justify-content: center; }
     [data-page="battle"] .top-bar { position: fixed; top: calc(6px + var(--safe-top)); left: calc(88px + var(--safe-left)); height: 44px; margin: 0; }
     [data-page="battle"] .round-label { font-size: 13px; letter-spacing: 1px; }
     [data-page="battle"] .battle-bottom-actions { top: calc(6px + var(--safe-top)); bottom: auto; right: calc(144px + var(--safe-right)); gap: 6px; }
     [data-page="battle"] .battle-bottom-actions > * { min-height: 44px; padding: 6px 10px; font-size: 12px; letter-spacing: 0; }
-    [data-page="battle"] .main-area { height: calc(var(--screen-height) - 72px - var(--hand-height) - var(--safe-top) - var(--safe-bottom)); grid-template-columns: clamp(88px, 16vw, 160px) minmax(0, 1fr) clamp(88px, 16vw, 160px); gap: 10px; align-items: stretch; }
+    [data-page="battle"] .main-area { height: var(--battle-height); grid-template-columns: var(--side-width) minmax(0, 1fr) var(--side-width); gap: 8px; align-items: stretch; }
     [data-page="battle"] .player-area, [data-page="battle"] .enemy-area, .battle-center { min-width: 0; min-height: 0; }
     [data-page="battle"] .player-area, [data-page="battle"] .enemy-area { overflow: hidden; padding: 3px; }
     [data-page="battle"] .player-area > *, [data-page="battle"] .enemy-area > * { flex-shrink: 0; }
-    [data-page="battle"] .player-img, [data-page="battle"] .enemy-img { width: clamp(0px, calc((var(--screen-height) - 310px) * .9), 110px); height: clamp(0px, calc((var(--screen-height) - 310px) * .9), 110px); }
+    [data-page="battle"] .player-img, [data-page="battle"] .enemy-img { width: min(var(--side-width), 100%); height: clamp(36px, calc(var(--battle-height) - 88px), 210px); }
+    [data-page="battle"] .player-area > .player-img { flex-shrink: 1; min-height: 28px; }
+    [data-page="battle"] .enemy-area > .enemy-img-wrapper { height: clamp(36px, calc(var(--battle-height) - 88px), 210px); flex-shrink: 1; min-height: 28px; }
+    [data-page="battle"] .enemy-img { max-height: 100%; }
     [data-page="battle"] .player-area, [data-page="battle"] .enemy-area, [data-page="battle"] .effect-preview { scrollbar-width: thin; scrollbar-color: #55515c transparent; }
     [data-page="battle"] .player-stats { margin: 4px 0 0; padding: 0; gap: 4px; }
     [data-page="battle"] .info-block { gap: 2px; }
@@ -171,35 +181,35 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
     [data-page="battle"] .player-stats .hp-bar, [data-page="battle"] .player-stats .shield-bar { flex: 1; }
     [data-page="battle"] .info-label { font-size: 11px; letter-spacing: 0; color: #bcb8c3; }
     [data-page="battle"] .hp-bar, [data-page="battle"] .shield-bar { width: 100%; height: 16px; }
-    [data-page="battle"] .toggle-chart-inline { margin-top: 4px; padding: 4px; min-height: 44px; letter-spacing: 0; }
+    [data-page="battle"] .toggle-chart-inline { position: fixed; left: calc(12px + var(--safe-left)); bottom: calc(54px + var(--safe-bottom)); width: min(var(--side-width), 116px); margin: 0; padding: 4px; min-height: 44px; letter-spacing: 0; z-index: 7; }
     [data-page="battle"] .enemy-img-wrapper { margin-bottom: 3px; }
     [data-page="battle"] .enemy-name { font-size: 15px; letter-spacing: 1px; margin: 2px 0 4px; }
     [data-page="battle"] .enemy-atk { font-size: 12px; color: #c6c1cc; margin: 0; letter-spacing: 0; }
     [data-page="battle"] .enemy-bars { width: 100%; padding: 0; gap: 4px; }
     [data-page="battle"] .enemy-desc { display: none; }
-    [data-page="battle"] .enemy-details-btn { margin-top: 2px; }
-    [data-page="battle"] .formation-area { height: 100%; padding: 0; gap: 8px; align-items: stretch; }
-    [data-page="battle"] .formation-sidebar { width: clamp(86px, 12vw, 130px); min-width: 0; gap: 4px; }
+    [data-page="battle"] .enemy-details-btn { position: fixed; right: calc(12px + var(--safe-right)); bottom: calc(58px + var(--safe-bottom)); width: min(var(--side-width), 116px); margin: 0; z-index: 7; }
+    [data-page="battle"] .formation-area { height: 100%; padding: 0; gap: 0; align-items: center; }
+    [data-page="battle"] .formation-sidebar { display: none; }
     [data-page="battle"] .effect-preview { flex: 1; min-height: 0; padding: 6px; font-size: 12px; overflow: hidden; }
     [data-page="battle"] .ep-empty { color: #b5aebe; font-size: 12px; }
     [data-page="battle"] .ep-col { padding: 3px; margin-bottom: 4px; }
     [data-page="battle"] .ep-title { margin-bottom: 4px; padding-bottom: 3px; }
     [data-page="battle"] .toggle-rules-btn { padding: 4px; font-size: 12px; letter-spacing: 0; min-height: 44px; flex-shrink: 0; }
     [data-page="battle"] .grand-rules, [data-page="battle"] .chart-inline-panel { display: none; }
-    [data-page="battle"] .formation-grid { height: 100%; max-width: 310px; grid-template-columns: repeat(3, minmax(44px, 1fr)); grid-template-rows: repeat(2, minmax(44px, 1fr)); gap: 6px; }
-    [data-page="battle"] .formation-slot { min-height: 44px; height: 100%; max-width: none; aspect-ratio: auto; overflow: hidden; }
+    [data-page="battle"] .formation-grid { height: auto; width: max-content; max-width: none; grid-template-columns: repeat(3, var(--card-width)); grid-template-rows: repeat(2, var(--card-height)); gap: 6px; }
+    [data-page="battle"] .formation-slot { min-height: 0; width: var(--card-width); height: var(--card-height); max-width: none; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 7px; }
     [data-page="battle"] .formation-slot img { object-fit: contain; }
     [data-page="battle"] .slot-label { top: 3px; left: 4px; font-size: 12px; }
     [data-page="battle"] .hand-section { position: fixed; left: calc(12px + var(--safe-left)); right: calc(12px + var(--safe-right)); bottom: calc(6px + var(--safe-bottom)); width: auto; height: var(--hand-height); transform: none; }
-    [data-page="battle"] .mobile-hand-meta { display: flex; justify-content: center; align-items: center; gap: 14px; height: 44px; }
+    [data-page="battle"] .mobile-hand-meta { display: flex; justify-content: center; align-items: center; height: 24px; }
     [data-page="battle"] .hand-progress { height: auto; font-size: 12px; line-height: 20px; letter-spacing: 0; }
-    [data-page="battle"] .card-info-btn { min-height: 44px; padding: 2px 8px; color: #d9c9f1; background: transparent; border: 0; border-radius: 6px; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
-    [data-page="battle"] .hand-area { height: calc(100% - 44px); min-height: 0; padding: 4px 0 0; grid-template-columns: minmax(0, 1fr) 116px; grid-template-rows: minmax(0, 1fr); gap: 12px; max-width: 640px; margin: auto; }
-    [data-page="battle"] .hand-cards-inner { height: 100%; min-width: 0; min-height: 0; grid-template-columns: repeat(5, minmax(44px, 72px)); grid-template-rows: minmax(0, 1fr); gap: 10px; }
-    [data-page="battle"] .hand-card { width: 100%; height: 100%; min-height: 0; max-height: 116px; }
-    [data-page="battle"] .hand-card img { object-fit: contain; }
+    [data-page="battle"] .card-info-btn { position: fixed; left: calc(12px + var(--safe-left)); bottom: calc(6px + var(--safe-bottom)); width: min(var(--side-width), 116px); min-height: 44px; padding: 2px 8px; color: #d9c9f1; background: transparent; border: 1px solid #39333f; border-radius: 6px; font-size: 12px; z-index: 7; }
+    [data-page="battle"] .hand-area { height: var(--card-height); min-height: 0; padding: 4px 0 0; display: flex; justify-content: center; gap: 0; max-width: none; margin: auto; }
+    [data-page="battle"] .hand-cards-inner { height: var(--card-height); min-width: 0; min-height: 0; grid-template-columns: repeat(5, var(--card-width)); grid-template-rows: var(--card-height); gap: 4px; }
+    [data-page="battle"] .hand-card { width: var(--card-width); height: var(--card-height); min-height: 0; max-height: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    [data-page="battle"] .hand-card img { object-fit: contain; -webkit-user-drag: none; pointer-events: none; }
     [data-page="battle"] .hand-card.selected { transform: translateY(-4px); }
-    [data-page="battle"] .confirm-btn { width: 116px; min-height: 48px; font-size: 13px; padding: 10px 6px; letter-spacing: 0; }
+    [data-page="battle"] .confirm-btn { position: fixed; right: calc(12px + var(--safe-right)); bottom: calc(6px + var(--safe-bottom)); width: min(var(--side-width), 116px); min-height: 48px; font-size: 13px; padding: 10px 6px; letter-spacing: 0; z-index: 7; }
     [data-page="battle"] .status-msg { max-width: 90vw; font-size: 14px; letter-spacing: 1px; }
     [data-page="battle"] .deck-panel { top: calc(56px + var(--safe-top)); bottom: auto; max-height: calc(var(--screen-height) - 64px - var(--safe-top) - var(--safe-bottom)); }
     .reward-content, .game-over-content { max-width: 100%; max-height: 100%; overflow: auto; padding: 16px 24px; }
@@ -211,12 +221,8 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
 }
 
 @media (max-width: 1100px) and (max-height: 350px) {
-    [data-page="battle"] .player-img { width: 36px; height: 36px; }
     [data-page="battle"] .player-stats { margin-top: 0; }
     [data-page="battle"] .toggle-chart-inline { margin-top: 0; }
-    [data-page="battle"] .hand-area { max-width: 500px; }
-    [data-page="battle"] .hand-cards-inner { gap: 8px; }
-    [data-page="battle"] .enemy-img-wrapper { display: none; }
 }
 
 @media (hover: none) {
@@ -226,9 +232,15 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
 }
 
 /* Extra compact arrangement while browser toolbars occupy the short edge. */
-[data-page="battle"].short-landscape .player-img,
-[data-page="battle"].short-landscape .enemy-img-wrapper { display: none; }
-[data-page="battle"].short-landscape .enemy-details-btn { position: fixed; right: calc(12px + var(--safe-right)); bottom: calc(6px + var(--safe-bottom) + var(--hand-height) - 44px); width: 88px; z-index: 6; }
+[data-page="battle"].short-landscape { --card-height: calc((var(--screen-height) - var(--safe-top) - var(--safe-bottom) - 80px) / 3); --hand-height: calc(var(--card-height) + 4px); }
+[data-page="battle"].short-landscape .mobile-hand-meta { height: 0; }
+[data-page="battle"].short-landscape .hand-progress { position: fixed; top: calc(32px + var(--safe-top)); left: calc(88px + var(--safe-left)); font-size: 10px; }
+[data-page="battle"].short-landscape .enemy-name { font-size: 13px; line-height: 16px; margin: 0; }
+[data-page="battle"].short-landscape .enemy-atk { font-size: 10px; line-height: 12px; }
+[data-page="battle"].short-landscape .hp-bar, [data-page="battle"].short-landscape .shield-bar { height: 14px; }
+[data-page="battle"].short-landscape .enemy-bars { gap: 2px; }
+[data-page="battle"].short-landscape .player-img, [data-page="battle"].short-landscape .enemy-img { height: max(28px, calc(var(--battle-height) - 98px)); }
+[data-page="battle"].short-landscape .enemy-area > .enemy-img-wrapper { height: max(28px, calc(var(--battle-height) - 98px)); }
 [data-page="battle"].short-landscape .player-stats .info-label { font-size: 0; }
 [data-page="battle"].short-landscape .player-stats .info-block:nth-child(1) .info-label::after { content: '生命'; font-size: 11px; }
 [data-page="battle"].short-landscape .player-stats .info-block:nth-child(2) .info-label::after { content: '护盾'; font-size: 11px; }
@@ -256,3 +268,13 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
 }
 .light-effects .beast { transition-property: transform, opacity; }
 .light-effects .star-pic { box-shadow: 0 0 8px rgba(180, 210, 255, .24); }
+
+/* Drag feedback uses one moving layer, without layout or blur animations. */
+.mobile-card-ghost { position: fixed; top: 0; left: 0; z-index: 150; pointer-events: none; border: 2px solid #eadbbf; border-radius: 7px; box-shadow: 0 10px 24px #0009; overflow: hidden; will-change: transform; }
+.mobile-card-ghost img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.mobile-card-ghost > :not(img) { display: none !important; }
+.mobile-drag-source { opacity: .25 !important; }
+.mobile-card-dragging { cursor: grabbing; }
+[data-page="battle"] .formation-slot.mobile-drop-available { border-style: solid; border-color: #b8aa86; }
+[data-page="battle"] .formation-slot.mobile-drop-target { border-color: #f4d480 !important; background: #47361c; outline: 2px solid #f4d480; outline-offset: 2px; }
+[data-page="battle"] .formation-slot.mobile-drop-blocked { outline: 2px solid #dc7d7d; outline-offset: 2px; }
