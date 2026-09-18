@@ -47,6 +47,77 @@
     };
     compact.addEventListener('change', () => { if (dialog.open) dialog.close(); });
 
+    // Browser chrome changes the usable height even when the device has not rotated.
+    let viewportFrame = 0;
+    function updateViewport() {
+        viewportFrame = 0;
+        const viewport = window.visualViewport;
+        // Do not undo the user's pinch zoom by reflowing around the zoomed viewport.
+        if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
+        const height = Math.round(Math.min(window.innerHeight, viewport?.height || window.innerHeight));
+        document.documentElement.style.setProperty('--screen-height', height + 'px');
+        document.body.classList.toggle('short-landscape', innerWidth > height && height <= 300);
+    }
+    function scheduleViewport() {
+        if (!viewportFrame) viewportFrame = requestAnimationFrame(updateViewport);
+    }
+    window.addEventListener('resize', scheduleViewport);
+    window.visualViewport?.addEventListener('resize', scheduleViewport);
+    updateViewport();
+
+    const fullscreenButton = document.createElement('button');
+    fullscreenButton.type = 'button';
+    fullscreenButton.className = 'fullscreen-btn';
+    document.body.append(fullscreenButton);
+    const fullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+    const canFullscreen = () => !!(
+        (document.documentElement.requestFullscreen && document.fullscreenEnabled !== false) ||
+        (document.documentElement.webkitRequestFullscreen && document.webkitFullscreenEnabled !== false)
+    );
+    let orientationLocked = false;
+    function updateFullscreenButton() {
+        const active = !!fullscreenElement();
+        fullscreenButton.textContent = active ? '退出全屏' : (canFullscreen() ? '全屏' : '全屏说明');
+        fullscreenButton.setAttribute('aria-pressed', String(active));
+        fullscreenButton.title = active ? '退出全屏（也可按 Esc）' : '隐藏浏览器地址栏';
+        if (!active && orientationLocked) {
+            screen.orientation?.unlock?.();
+            orientationLocked = false;
+        }
+        scheduleViewport();
+    }
+    function showFullscreenHelp() {
+        const help = document.createElement('div');
+        help.innerHTML = '<p>当前浏览器未允许网页全屏。可以从手机主屏幕独立打开游戏，减少浏览器栏占用。</p><p><strong>iPhone / iPad：</strong>用 Safari 打开游戏，点“分享” → “添加到主屏幕”；如有“作为网页 App 打开”，请开启。</p><p><strong>Android：</strong>打开浏览器菜单，选择“安装应用”或“添加到主屏幕”（名称因浏览器而异）。</p><p>添加后，请点主屏幕上的游戏图标进入。切换到独立窗口会开启新的游戏会话。</p>';
+        window.WuxingMobile.showPanel('全屏游玩', help);
+    }
+    fullscreenButton.addEventListener('click', async event => {
+        event.stopPropagation();
+        try {
+            if (fullscreenElement()) {
+                const exit = document.exitFullscreen || document.webkitExitFullscreen;
+                if (exit) await exit.call(document);
+            } else if (canFullscreen()) {
+                const root = document.documentElement;
+                if (root.requestFullscreen) await root.requestFullscreen({ navigationUI: 'hide' });
+                else await root.webkitRequestFullscreen();
+                // Orientation lock is optional; unsupported browsers still get fullscreen.
+                if (matchMedia('(pointer: coarse)').matches && screen.orientation?.lock) {
+                    try { await screen.orientation.lock('landscape'); orientationLocked = true; } catch (_) {}
+                }
+            } else {
+                showFullscreenHelp();
+            }
+        } catch (_) {
+            showFullscreenHelp();
+        } finally {
+            updateFullscreenButton();
+        }
+    });
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+    updateFullscreenButton();
+
     // Card collections use explicit pages on phones, so no vertical swipe is needed.
     for (const [panelSelector, gridSelector, size] of [['.deck-panel', '.deck-list', 5], ['.atlas-modal', '.atlas-grid', 4]]) {
         const panel = document.querySelector(panelSelector);

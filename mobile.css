@@ -7,6 +7,15 @@
     --safe-left: env(safe-area-inset-left, 0px);
 }
 @supports (height: 100dvh) { :root { --screen-height: 100dvh; } }
+.fullscreen-btn {
+    position: fixed; top: calc(20px + var(--safe-top)); right: calc(76px + var(--safe-right)); z-index: 35;
+    min-width: 76px; min-height: 44px; padding: 6px 10px; border: 1px solid #4e455d; border-radius: 10px;
+    background: #17121f; color: #e0d2f4; font: 13px "Microsoft YaHei", "PingFang SC", sans-serif; cursor: pointer;
+}
+.fullscreen-btn:focus-visible { outline: 2px solid #d4b7f7; outline-offset: 3px; }
+:fullscreen { background: #000; }
+[data-page="beast"] .back-btn:nth-of-type(2) { right: calc(164px + var(--safe-right)) !important; }
+.volume-slider-wrap { top: calc(70px + var(--safe-top)); right: calc(20px + var(--safe-right)); background: #17121f; padding: 8px; border-radius: 8px; }
 .mobile-only, .rotate-notice { display: none; }
 .mobile-collection-pages { display: none; }
 .mobile-page-hidden { display: none !important; }
@@ -52,7 +61,8 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
     button, .deck-toggle, .deck-close, .choice-btn { min-height: 44px; }
     .back-btn { top: calc(6px + var(--safe-top)); left: calc(8px + var(--safe-left)); padding: 6px 12px; letter-spacing: 1px; background: #131317; }
     .volume-btn { top: calc(6px + var(--safe-top)); right: calc(8px + var(--safe-right)); }
-    .volume-slider-wrap { top: calc(6px + var(--safe-top)); right: calc(60px + var(--safe-right)); min-height: 44px; padding: 0 10px; background: #18181f; border-radius: 8px; }
+    .fullscreen-btn { top: calc(6px + var(--safe-top)); right: calc(60px + var(--safe-right)); }
+    .volume-slider-wrap { top: calc(54px + var(--safe-top)); right: calc(8px + var(--safe-right)); min-height: 44px; padding: 0 10px; background: #18181f; border-radius: 8px; }
     .volume-slider { min-height: 28px; }
     .guide-overlay, .atlas-overlay, .atlas-detail-overlay, .reward-panel, .game-over { height: var(--screen-height); padding: calc(8px + var(--safe-top)) calc(8px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left)); }
     .guide-modal, .atlas-modal { max-height: 100%; max-width: 100%; }
@@ -112,7 +122,7 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
     [data-page="beast"] .star-overlay { top: var(--mobile-star-top) !important; }
     [data-page="beast"] .locked-tag { bottom: -20px; font-size: 10px; padding: 2px 3px; letter-spacing: 0; }
     [data-page="beast"] .deck-toggle { bottom: calc(8px + var(--safe-bottom)); right: calc(8px + var(--safe-right)); }
-    [data-page="beast"] .back-btn:nth-of-type(2) { top: calc(6px + var(--safe-top)) !important; right: calc(60px + var(--safe-right)) !important; }
+    [data-page="beast"] .back-btn:nth-of-type(2) { top: calc(6px + var(--safe-top)) !important; right: calc(144px + var(--safe-right)) !important; }
 
     /* Event choices stay on one screen. Stories open in a paged reading panel. */
     .event-container { height: var(--screen-height); max-width: none; min-height: 0; justify-content: center; overflow: hidden; padding: calc(52px + var(--safe-top)) calc(16px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(16px + var(--safe-left)); }
@@ -142,17 +152,17 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
     .upgrade-hint { margin-bottom: 8px; }
 
     /* Battle: compact toolbar, three flexible columns, full-width hand dock. */
-    [data-page="battle"] { --hand-height: clamp(112px, 32vh, 158px); padding: calc(56px + var(--safe-top)) calc(12px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(12px + var(--safe-left)); }
+    [data-page="battle"] { --hand-height: clamp(96px, calc(var(--screen-height) * .32), 158px); padding: calc(56px + var(--safe-top)) calc(12px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(12px + var(--safe-left)); }
     [data-page="battle"] .mobile-only { display: inline-flex; align-items: center; justify-content: center; }
     [data-page="battle"] .top-bar { position: fixed; top: calc(6px + var(--safe-top)); left: calc(88px + var(--safe-left)); height: 44px; margin: 0; }
     [data-page="battle"] .round-label { font-size: 13px; letter-spacing: 1px; }
-    [data-page="battle"] .battle-bottom-actions { top: calc(6px + var(--safe-top)); bottom: auto; right: calc(60px + var(--safe-right)); gap: 6px; }
+    [data-page="battle"] .battle-bottom-actions { top: calc(6px + var(--safe-top)); bottom: auto; right: calc(144px + var(--safe-right)); gap: 6px; }
     [data-page="battle"] .battle-bottom-actions > * { min-height: 44px; padding: 6px 10px; font-size: 12px; letter-spacing: 0; }
     [data-page="battle"] .main-area { height: calc(var(--screen-height) - 72px - var(--hand-height) - var(--safe-top) - var(--safe-bottom)); grid-template-columns: clamp(88px, 16vw, 160px) minmax(0, 1fr) clamp(88px, 16vw, 160px); gap: 10px; align-items: stretch; }
     [data-page="battle"] .player-area, [data-page="battle"] .enemy-area, .battle-center { min-width: 0; min-height: 0; }
     [data-page="battle"] .player-area, [data-page="battle"] .enemy-area { overflow: hidden; padding: 3px; }
     [data-page="battle"] .player-area > *, [data-page="battle"] .enemy-area > * { flex-shrink: 0; }
-    [data-page="battle"] .player-img, [data-page="battle"] .enemy-img { width: clamp(48px, 16vh, 110px); height: clamp(48px, 16vh, 110px); }
+    [data-page="battle"] .player-img, [data-page="battle"] .enemy-img { width: clamp(0px, calc((var(--screen-height) - 310px) * .9), 110px); height: clamp(0px, calc((var(--screen-height) - 310px) * .9), 110px); }
     [data-page="battle"] .player-area, [data-page="battle"] .enemy-area, [data-page="battle"] .effect-preview { scrollbar-width: thin; scrollbar-color: #55515c transparent; }
     [data-page="battle"] .player-stats { margin: 4px 0 0; padding: 0; gap: 4px; }
     [data-page="battle"] .info-block { gap: 2px; }
@@ -214,3 +224,11 @@ button, [role="button"], .hand-card, .formation-slot, .star-overlay, .beast, .ch
     .hand-card:not(.selected):hover { transform: none; }
     [data-page="battle"] > .card-tooltip { display: none !important; }
 }
+
+/* Extra compact arrangement while browser toolbars occupy the short edge. */
+[data-page="battle"].short-landscape .player-img,
+[data-page="battle"].short-landscape .enemy-img-wrapper { display: none; }
+[data-page="battle"].short-landscape .enemy-details-btn { position: fixed; right: calc(12px + var(--safe-right)); bottom: calc(6px + var(--safe-bottom) + var(--hand-height) - 44px); width: 88px; z-index: 6; }
+[data-page="battle"].short-landscape .player-stats .info-label { font-size: 0; }
+[data-page="battle"].short-landscape .player-stats .info-block:nth-child(1) .info-label::after { content: '生命'; font-size: 11px; }
+[data-page="battle"].short-landscape .player-stats .info-block:nth-child(2) .info-label::after { content: '护盾'; font-size: 11px; }
