@@ -50,7 +50,12 @@
             font-size: 14px;
             color: rgba(255,255,255,0.35);
             letter-spacing: 6px;
-            pointer-events: none;
+            min-height: 44px;
+            padding: 8px 14px;
+            border: 0;
+            background: transparent;
+            font-family: inherit;
+            cursor: pointer;
             animation: hintPulse 3s ease-in-out infinite;
         }
         @keyframes hintPulse {
@@ -74,7 +79,7 @@
         <div class="story-line" id="line2">四象之力被星兽吞噬，五行符阵也随之崩裂。</div>
         <div class="story-line" id="line3">你是最后的执阵者，需要以五行卡牌重连星轨，使四象归位。</div>
     </div>
-    <div class="click-hint" id="clickHint">点击星核开始</div>
+    <button type="button" class="click-hint" id="clickHint">点击跳过 · 进入主界面</button>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -243,51 +248,22 @@
             render(time);
         });
 
-        // 点击粒子球后显示故事文字
-        let storyRevealed = false;
-        let canEnter = false;
-
-        document.body.addEventListener('click', (e) => {
-            if (storyRevealed && canEnter) {
-                // 文字已全部显示，点击进入四象首页
-                document.body.style.opacity = '0';
-                document.body.style.transition = 'opacity 0.6s ease';
-                setTimeout(() => {
-                    window.location.href = 'page2.html';
-                }, 600);
-                return;
-            }
-            if (storyRevealed) return;
-
-            storyRevealed = true;
-
-            // 隐藏点击提示
-            document.getElementById('clickHint').style.opacity = '0';
-            document.getElementById('clickHint').style.transition = 'opacity 0.5s ease';
-
-            // 逐行显示文字
-            const line1 = document.getElementById('line1');
-            const line2 = document.getElementById('line2');
-            const line3 = document.getElementById('line3');
-
-            setTimeout(() => {
-                line1.classList.add('show');
-            }, 400);
-
-            setTimeout(() => {
-                line2.classList.add('show');
-            }, 2000);
-
-            setTimeout(() => {
-                line3.classList.add('show');
-                // 第三行显示后，提示再次点击进入
-                setTimeout(() => {
-                    canEnter = true;
-                    const hint = document.getElementById('clickHint');
-                    hint.textContent = '再次点击星核 · 开启旅程';
-                    hint.style.opacity = '1';
-                }, 1200);
-            }, 4000);
+        // The story plays automatically; one tap can skip it at any point.
+        const storyTimers = ['line1', 'line2', 'line3'].map((id, index) =>
+            setTimeout(() => document.getElementById(id).classList.add('show'), [400, 2000, 4000][index])
+        );
+        let entering = false;
+        function enterMainMenu() {
+            if (entering) return;
+            entering = true;
+            storyTimers.forEach(clearTimeout);
+            window.location.href = 'page2.html';
+        }
+        document.getElementById('clickHint').addEventListener('click', enterMainMenu);
+        document.body.addEventListener('click', event => {
+            // Fullscreen, orientation prompts and their dialogs keep their own actions.
+            if (event.target.closest('button, a, input, select, textarea, dialog, .rotate-notice')) return;
+            enterMainMenu();
         });
     </script>
 </body>

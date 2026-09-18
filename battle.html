@@ -8811,8 +8811,9 @@
         }
 
         function renderHand() {
-            // 如果数量不一致才整体重绘
-            if (handArea.children.length !== gameState.hand.length) {
+            // Rebuild when card identities change, even if the hand count stays the same.
+            if (handArea.children.length !== gameState.hand.length ||
+                gameState.hand.some((card, i) => handArea.children[i]._handCard !== card)) {
                 handArea.innerHTML = '';
                 if (gameState.hand.length === 0) {
                     handArea.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;letter-spacing:3px;">本回合无可用手牌</div>';
@@ -8821,6 +8822,7 @@
                 gameState.hand.forEach((card, idx) => {
                     const el = document.createElement('div');
                     el.className = 'hand-card';
+                    el._handCard = card;
                     el.draggable = !card.used;
                     // 蒙尘覆盖层
                     const dustOverlay = document.createElement('div');
@@ -8879,101 +8881,100 @@
                     });
                     handArea.appendChild(el);
                 });
-            } else {
-                // 只更新 class 和已放标签
-                // 计算相生相克关系（基于阵法已有牌 + 选中牌）
-                let shengOf = null, keOf = null;
-                // 收集阵法中已有的牌（未结算的）
-                const placedSlots = gameState.formation.filter(s => s.card !== null && !(s.type === 'top' && s.columnResolved));
-                const selectedCard = gameState.hand[gameState.selectedHandIdx];
+            }
+            // Always sync availability, including cards just rebuilt or returned to the hand.
+            // 计算相生相克关系（基于阵法已有牌 + 选中牌）
+            let shengOf = null, keOf = null;
+            // 收集阵法中已有的牌（未结算的）
+            const placedSlots = gameState.formation.filter(s => s.card !== null && !(s.type === 'top' && s.columnResolved));
+            const selectedCard = gameState.hand[gameState.selectedHandIdx];
 
-                if (selectedCard) {
-                    // 有选中牌时：基于选中牌计算
-                    const selEl = selectedCard.element;
-                    for (const e of Object.keys(SHENG)) {
-                        if (SHENG[e] === selEl) shengOf = e;
+            if (selectedCard) {
+                // 有选中牌时：基于选中牌计算
+                const selEl = selectedCard.element;
+                for (const e of Object.keys(SHENG)) {
+                    if (SHENG[e] === selEl) shengOf = e;
+                }
+                for (const e of Object.keys(KE)) {
+                    if (KE[e] === selEl) keOf = e;
+                }
+                const shengTarget = SHENG[selEl];
+                const keTarget = KE[selEl];
+                // 同时考虑阵法已有牌：选中牌可放空位时，与已放牌的关系
+                // 不再覆盖 shengOf/keOf，只补充阵法已有的关系
+            } else if (placedSlots.length > 0) {
+                // 没有选中牌但阵法已有牌时：根据阵法牌高亮手牌
+                placedSlots.forEach(slot => {
+                    const placedEl = slot.card.element;
+                    const oppositeType = slot.type === 'top' ? 'bottom' : 'top';
+                    // 该列对面位置是否为空？
+                    const opposite = gameState.formation.find(s => s.type === oppositeType && s.idx === slot.idx);
+                    if (opposite && !opposite.card) {
+                        // 如果对面空，手牌中能生/克 placedEl 的（放对面时）
+                        // 手牌元素放 oppositeType，和 placedEl 的关系
+                        // 如果 slot 在上排（发动区），手牌放下面（辅助）→ checkElementRelation(手牌, placedEl)
+                        // 如果 slot 在下排（辅助区），手牌放上面（发动）→ checkElementRelation(placedEl, 手牌)
+                        // 但我们不区分方向，统一标记"和阵法牌有相生/相克关系"
                     }
-                    for (const e of Object.keys(KE)) {
-                        if (KE[e] === selEl) keOf = e;
+                });
+            }
+            for (let i = 0; i < gameState.hand.length; i++) {
+                const card = gameState.hand[i];
+                const el = handArea.children[i];
+                el.classList.toggle('selected', !!card.selected);
+                el.classList.toggle('used', !!card.used);
+                el.draggable = !card.used;
+                // 相生相克高亮
+                el.classList.remove('sheng', 'ke', 'hint-sheng', 'hint-ke');
+                if (card.element === shengOf && !card.used) el.classList.add('sheng');
+                if (card.element === keOf && !card.used) el.classList.add('ke');
+                // 阵法提示：根据 hintColumn 高亮手牌
+                if (gameState.hintColumn >= 0 && !card.used && !selectedCard) {
+                    const topSlot = gameState.formation.find(s => s.type === 'top' && s.idx === gameState.hintColumn);
+                    if (topSlot && topSlot.card) {
+                        const rel = checkElementRelation(card.element, topSlot.card.element);
+                        if (rel === 2) el.classList.add('hint-sheng');
+                        if (rel === 0.75) el.classList.add('hint-ke');
                     }
-                    const shengTarget = SHENG[selEl];
-                    const keTarget = KE[selEl];
-                    // 同时考虑阵法已有牌：选中牌可放空位时，与已放牌的关系
-                    // 不再覆盖 shengOf/keOf，只补充阵法已有的关系
-                } else if (placedSlots.length > 0) {
-                    // 没有选中牌但阵法已有牌时：根据阵法牌高亮手牌
-                    placedSlots.forEach(slot => {
-                        const placedEl = slot.card.element;
+                }
+                // 如果没有选中牌但有阵法牌，检查手牌和阵法牌的关系
+                if (!selectedCard && placedSlots.length > 0 && !card.used) {
+                    for (const slot of placedSlots) {
                         const oppositeType = slot.type === 'top' ? 'bottom' : 'top';
-                        // 该列对面位置是否为空？
                         const opposite = gameState.formation.find(s => s.type === oppositeType && s.idx === slot.idx);
                         if (opposite && !opposite.card) {
-                            // 如果对面空，手牌中能生/克 placedEl 的（放对面时）
-                            // 手牌元素放 oppositeType，和 placedEl 的关系
-                            // 如果 slot 在上排（发动区），手牌放下面（辅助）→ checkElementRelation(手牌, placedEl)
-                            // 如果 slot 在下排（辅助区），手牌放上面（发动）→ checkElementRelation(placedEl, 手牌)
-                            // 但我们不区分方向，统一标记"和阵法牌有相生/相克关系"
-                        }
-                    });
-                }
-                for (let i = 0; i < gameState.hand.length; i++) {
-                    const card = gameState.hand[i];
-                    const el = handArea.children[i];
-                    el.classList.toggle('selected', !!card.selected);
-                    el.classList.toggle('used', !!card.used);
-                    el.draggable = !card.used;
-                    // 相生相克高亮
-                    el.classList.remove('sheng', 'ke', 'hint-sheng', 'hint-ke');
-                    if (card.element === shengOf && !card.used) el.classList.add('sheng');
-                    if (card.element === keOf && !card.used) el.classList.add('ke');
-                    // 阵法提示：根据 hintColumn 高亮手牌
-                    if (gameState.hintColumn >= 0 && !card.used && !selectedCard) {
-                        const topSlot = gameState.formation.find(s => s.type === 'top' && s.idx === gameState.hintColumn);
-                        if (topSlot && topSlot.card) {
-                            const rel = checkElementRelation(card.element, topSlot.card.element);
-                            if (rel === 2) el.classList.add('hint-sheng');
-                            if (rel === 0.75) el.classList.add('hint-ke');
-                        }
-                    }
-                    // 如果没有选中牌但有阵法牌，检查手牌和阵法牌的关系
-                    if (!selectedCard && placedSlots.length > 0 && !card.used) {
-                        for (const slot of placedSlots) {
-                            const oppositeType = slot.type === 'top' ? 'bottom' : 'top';
-                            const opposite = gameState.formation.find(s => s.type === oppositeType && s.idx === slot.idx);
-                            if (opposite && !opposite.card) {
-                                // 手牌可放对面位置
-                                if (oppositeType === 'bottom') {
-                                    // 手牌放下面（辅助），slot 在上排（发动）
-                                    const rel = checkElementRelation(card.element, slot.card.element);
-                                    if (rel === 2) el.classList.add('sheng');
-                                    if (rel === 0.5) el.classList.add('ke');
-                                } else {
-                                    // 手牌放上面（发动），slot 在下排（辅助）
-                                    const rel = checkElementRelation(slot.card.element, card.element);
-                                    if (rel === 2) el.classList.add('sheng');
-                                    if (rel === 0.5) el.classList.add('ke');
-                                }
+                            // 手牌可放对面位置
+                            if (oppositeType === 'bottom') {
+                                // 手牌放下面（辅助），slot 在上排（发动）
+                                const rel = checkElementRelation(card.element, slot.card.element);
+                                if (rel === 2) el.classList.add('sheng');
+                                if (rel === 0.5) el.classList.add('ke');
+                            } else {
+                                // 手牌放上面（发动），slot 在下排（辅助）
+                                const rel = checkElementRelation(slot.card.element, card.element);
+                                if (rel === 2) el.classList.add('sheng');
+                                if (rel === 0.5) el.classList.add('ke');
                             }
                         }
                     }
-                    // 蒙尘样式
-                    const isDusted = !card.used && gameState.dustedIdx === i;
-                    el.classList.toggle('dusted', isDusted);
-                    const dustOverlay = el.children[0];
-                    if (dustOverlay && dustOverlay.classList.contains('dust-overlay')) {
-                        dustOverlay.classList.toggle('show', isDusted);
-                    }
-                    // "已放"标签：children[0]=dust-overlay, children[1]=img, children[2]=rat-mark, children[3]=placed-tag
-                    const ratTag = el.children[2];
-                    if (ratTag && ratTag.classList.contains('rat-mark')) {
-                        const isMarked = !card.used && gameState.ratMarkedIdx === i;
-                        ratTag.style.display = isMarked ? 'flex' : 'none';
-                        el.classList.toggle('rat-glow', isMarked);
-                    }
-                    const tag = el.children[3];
-                    if (tag && tag.classList.contains('placed-tag')) {
-                        tag.style.display = card.used ? 'block' : 'none';
-                    }
+                }
+                // 蒙尘样式
+                const isDusted = !card.used && gameState.dustedIdx === i;
+                el.classList.toggle('dusted', isDusted);
+                const dustOverlay = el.children[0];
+                if (dustOverlay && dustOverlay.classList.contains('dust-overlay')) {
+                    dustOverlay.classList.toggle('show', isDusted);
+                }
+                // Find overlays by class; the name label changes their child positions.
+                const ratTag = el.querySelector('.rat-mark');
+                if (ratTag && ratTag.classList.contains('rat-mark')) {
+                    const isMarked = !card.used && gameState.ratMarkedIdx === i;
+                    ratTag.style.display = isMarked ? 'flex' : 'none';
+                    el.classList.toggle('rat-glow', isMarked);
+                }
+                const tag = el.querySelector('.placed-tag');
+                if (tag && tag.classList.contains('placed-tag')) {
+                    tag.style.display = card.used ? 'block' : 'none';
                 }
             }
         }
@@ -8992,16 +8993,21 @@
                 return;
             }
             const cardName = slot.card.name;
-            const cardEl = slot.card.element;
-            // 找到手牌中对应的牌（标记为未使用）
-            for (let i = gameState.hand.length - 1; i >= 0; i--) {
-                if (gameState.hand[i].element === cardEl && gameState.hand[i].used) {
-                    gameState.hand[i].used = false;
-                    break;
-                }
+            // Restore the exact card that was placed, not another card of its element.
+            const card = slot._cardUid
+                ? gameState.hand.find(c => c.uid === slot._cardUid)
+                : gameState.hand[slot._handIdx];
+            if (!card) {
+                showStatus('这张牌已不在本回合手牌中，无法撤回');
+                return;
             }
+            card.used = false;
+            card.selected = false;
+            if (gameState.hand[gameState.selectedHandIdx] === card) gameState.selectedHandIdx = -1;
             slot.card = null;
             slot.newThisRound = false;
+            delete slot._cardUid;
+            delete slot._handIdx;
             gameState.placedThisRound = Math.max(0, gameState.placedThisRound - 1);
             addLog(`取消 ${cardName} 的放置`, 'info');
             updateUI();
